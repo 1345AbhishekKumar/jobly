@@ -24,21 +24,21 @@ export function Footer() {
         <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-text-secondary">
           <Link
             href="/dashboard"
-            className="hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-sm transition-colors px-1"
+            className="hover:text-accent focus-ring rounded-sm px-1 py-1"
           >
             Dashboard
           </Link>
           <Link
             href="/privacy"
-            className="hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-sm transition-colors px-1"
+            className="hover:text-accent focus-ring rounded-sm px-1 py-1"
           >
             Privacy Policy
           </Link>
           <Link
             href="/terms"
-            className="hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-sm transition-colors px-1"
+            className="hover:text-accent focus-ring rounded-sm px-1 py-1"
           >
-            Terms & Condition
+            Terms & Conditions
           </Link>
         </div>
       </div>

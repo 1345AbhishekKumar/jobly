@@ -13,6 +13,24 @@
       "skillPath": "skills/imprint/SKILL.md",
       "computedHash": "1690b7e280208914a8c950d414d47a7ccdc0278aacf4e04b127830db696c4f01"
     },
+    "insforge": {
+      "source": "insforge/insforge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/insforge/SKILL.md",
+      "computedHash": "6b774595fb9707cdc203717493dc60b1cfcec3e150f63331aabba33e3f7412f6"
+    },
+    "insforge-debug": {
+      "source": "insforge/insforge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/insforge-debug/SKILL.md",
+      "computedHash": "cc1348806d59e2505924b6278d405c7ff9dd0f36d6e489493d53e16ce54b28ab"
+    },
+    "insforge-integrations": {
+      "source": "insforge/insforge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/insforge-integrations/SKILL.md",
+      "computedHash": "c8ec139490a7072f3b15289ece840a22ebc23c82b63dd51b0a0b3d00a04d10c2"
+    },
     "next-best-practices": {
       "source": "vercel-labs/next-skills",
       "sourceType": "github",

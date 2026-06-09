@@ -2,7 +2,8 @@
 
 @theme {
   /* Font */
-  --font-sans: "Inter", sans-serif;
+  --font-sans: var(--font-sans), "Inter", sans-serif;
+  --font-display: var(--font-display), "Plus Jakarta Sans", sans-serif;
 
   /* Page and surface backgrounds */
   --color-background: #f6f7fb;
@@ -82,3 +83,132 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-sans);
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+/* --- DESIGN ENGINEERING ANIMATIONS --- */
+
+/* Strong custom bezier curves */
+:root {
+  --ease-out-custom: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-custom: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Staggered page entry animations */
+.animate-hero-fade {
+  opacity: 0;
+  animation: heroFadeIn 1000ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered delays */
+.delay-100 {
+  animation-delay: 100ms;
+}
+.delay-200 {
+  animation-delay: 200ms;
+}
+.delay-300 {
+  animation-delay: 300ms;
+}
+.delay-400 {
+  animation-delay: 400ms;
+}
+.delay-500 {
+  animation-delay: 500ms;
+}
+
+/* Tactile interactive buttons and links */
+.btn-interactive {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-interactive:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(124, 92, 252, 0.12);
+}
+
+.btn-interactive:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Custom focus ring matching design system specs */
+.focus-ring {
+  transition: box-shadow 160ms var(--ease-out-custom);
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0px 0px 0px 4px rgba(124, 92, 252, 0.15);
+}
+
+/* Browser mockup interactive lift */
+.mockup-hover {
+  transition: transform 600ms var(--ease-out-custom), box-shadow 600ms var(--ease-out-custom);
+}
+
+.mockup-hover:hover {
+  transform: translateY(-4px) scale(1.005);
+  box-shadow: 
+    0 30px 60px -15px rgba(16, 24, 40, 0.08), 
+    0 18px 36px -18px rgba(16, 24, 40, 0.12), 
+    0 0 0 1px rgba(124, 92, 252, 0.08);
+}
+
+/* Hardware-accelerated hover underline for Nav Links */
+.nav-link-underline {
+  position: relative;
+  transition: color 150ms var(--ease-out-custom);
+}
+
+.nav-link-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 250ms var(--ease-out-custom);
+}
+
+.nav-link-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Premium tab transitions (incorporating blur to mask swaps) */
+.tab-panel-transition {
+  transition: opacity 500ms var(--ease-out-custom), transform 500ms var(--ease-out-custom), filter 500ms var(--ease-out-custom);
+}
+
+.tab-panel-inactive {
+  opacity: 0;
+  transform: scale(0.96) translateY(8px);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.tab-panel-active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  filter: blur(0px);
+}
+
