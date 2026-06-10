@@ -19,7 +19,7 @@ async function main() {
     if (error) {
       console.log("error keys:", Object.keys(error));
       console.log("error JSON:", JSON.stringify(error, null, 2));
-      const errDetails = error as Record<string, unknown>;
+      const errDetails = error as any;
       console.log("error.statusCode:", errDetails.statusCode);
       console.log("error.status:", errDetails.status);
       console.log("error.error:", errDetails.error);

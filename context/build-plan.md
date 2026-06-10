@@ -178,11 +178,11 @@ Build the complete Find Jobs page UI with mock data. No logic yet.
 
 Agent calls Adzuna API to find jobs matching user's search criteria, scores them against user profile, saves to DB.
 
-**Logic:**
+**Logic:*
 
 - POST /api/agent/find receives jobTitle and location from client
 - Call Adzuna API:
-  - GET https://api.adzuna.com/v1/api/jobs/{country}/search/1
+  - GET https://api.abhi.com/v1/api/jobs/{country}/search/1
   - params: what={jobTitle}, where={location}, results_per_page=10, app_id, app_key
   - Detect country from location input — default to 'us'
 - For each job returned:

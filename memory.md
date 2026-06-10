@@ -1,34 +1,36 @@
-# Memory — Database Schema Setup (Feature 04)
+# Memory — Profile Page UI & Save Logic (Feature 05 & 06)
 
-Last updated: 2026-06-10T21:15:30+05:30
+Last updated: 2026-06-10T22:36:00+05:30
 
 ## What was built
 
-- **Database Tables**: Created the `profiles`, `agent_runs`, `jobs`, and `agent_logs` tables in PostgreSQL on the InsForge backend.
-- **Row Level Security (RLS)**: Enabled RLS on all 4 tables and created 12 policies to ensure user data isolation (`auth.uid() = id` / `auth.uid() = user_id`).
-- **Storage Buckets**: Created a private, authenticated-access-only `resumes` storage bucket.
-- **InsForge MCP Server**: Installed the InsForge MCP server (`insforge`) to manage backend infrastructure.
+- **Profile Route**: Built protected Next.js App Router page at [app/profile/page.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/app/profile/page.tsx) that retrieves current user and profile data.
+- **Proxy Download Endpoint**: Created authenticated download proxy at [app/api/resume/download/route.ts](file:///d:/MyProjects/ongoing_Projects/jobly/app/api/resume/download/route.ts) to serve private files securely from storage.
+- **Server Actions**: Created profile action file at [actions/profile.ts](file:///d:/MyProjects/ongoing_Projects/jobly/actions/profile.ts) with `saveProfile` (updates DB, sets completeness metrics) and `uploadResume` (uploads PDF to private `resumes` bucket and saves URL).
+- **Aesthetic UI Components**:
+  - `CompletionIndicator.tsx` — circular progress ring & warning tags matching profile design specifications.
+  - `ResumeUpload.tsx` — drag-and-drop zone with cloud upload, PDF limits (5MB), and view link pointing to proxy endpoint.
+  - `ProfileForm.tsx` — interactive form handling personal & professional info, skills/industries tags, up to 3 work experience cards, education, and job preferences.
 
 ## Decisions made
 
-- **User Isolation**: Used native InsForge Auth `auth.uid()` to filter tables based on the authenticated user's ID.
-- **Storage Scope**: Resume PDFs will be stored securely at `resumes/{user_id}/resume.pdf` under private access.
-- **Reserved Schema Fields**: `jobs.source` allows `'search'` and `'url'` to future-proof manual job imports, even though manual URL entry is currently out-of-scope for the frontend.
+- **Profile Completeness Metric**: Defined 10 core fields to compute profile completion (e.g. 70% complete matches the design when phone, location, and education are missing).
+- **Education Layout**: Nested education fields as a single-element array inside `education` jsonb column to preserve database schema compatibility.
+- **Secure File Retrievability**: Handled private bucket file downloads by proxying them through an authenticated route instead of direct cross-origin link access (which lacks the authorization header/token).
 
 ## Problems solved
 
-- **InsForge MCP Integration**: Resolved access to the InsForge backend by installing the InsForge MCP server via `@insforge/install` with the project API key and URL, allowing schema execution and verification directly from the agent using MCP tools.
+- **401 Unauthorized Error on Resume Download**: Resolved `AUTH_INVALID_CREDENTIALS` error when viewing the resume PDF by serving files via the new Next.js proxy route `/api/resume/download`.
+- **Type Verification Failures**: Resolved TypeScript compilation errors in [test-signup-sdk.ts](file:///d:/MyProjects/ongoing_Projects/jobly/test-signup-sdk.ts) and [test-signup-existing.ts](file:///d:/MyProjects/ongoing_Projects/jobly/test-signup-existing.ts) where `InsForgeError` was incorrectly cast to `Record<string, unknown>`.
 
 ## Current state
 
-- **Backend Foundation Complete**: The database schema is fully initialized, verified, and ready. Storage bucket `resumes` is set up.
-- **Next Phase Readiness**: The backend is configured, and we can proceed to Phase 1's frontend, auth, and analytics features.
+- **Profile Page Complete**: The profile UI, validation, database/storage save, and secure file viewing operations are fully implemented and ready.
 
 ## Next session starts with
 
-- **Phase 1, Feature 01 (Homepage UI)**: Build the complete homepage layout (Navbar, Hero, Dashboard preview image, Value propositions, Testimonials, Footer) in `app/page.tsx`.
-- **Phase 1, Feature 02 (Auth)**: Wire up the Google & GitHub OAuth sign-in flow.
-- **Phase 1, Feature 03 (PostHog)**: Set up PostHog tracking.
+- **Phase 2, Feature 07 (AI Profile Extraction)**: Implement the "Extract from Resume" button utilizing OpenRouter/GPT-4o to parse PDF text and populate the form fields automatically.
+- **Phase 2, Feature 08 (Resume PDF Generation)**: Implement "Generate Resume from Profile" using `@react-pdf/renderer` and OpenRouter/GPT-4o.
 
 ## Open questions
 
