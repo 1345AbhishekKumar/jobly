@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
+import { PostHogProvider } from "./providers";
+import { PostHogPageView } from "./posthog-pageview";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -28,7 +31,14 @@ export default function RootLayout({
       className={`${inter.variable} ${plusJakarta.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background font-sans text-text-primary">{children}</body>
+      <body className="min-h-full flex flex-col bg-background font-sans text-text-primary">
+          <PostHogProvider>
+            <Suspense fallback={null}>
+              <PostHogPageView />
+            </Suspense>
+            {children}
+          </PostHogProvider>
+        </body>
     </html>
   );
 }
