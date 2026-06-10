@@ -237,6 +237,42 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
       <ResumeUpload
         initialResumeUrl={resumePdfUrl}
         onUploadSuccess={(url) => setResumePdfUrl(url)}
+        onExtractStart={() => {
+          setStatus({ success: true, message: "Extracting resume details... Please wait." });
+        }}
+        onExtractSuccess={(data) => {
+          if (data.full_name) setFullName(data.full_name);
+          if (data.phone) setPhone(data.phone);
+          if (data.location) setLocation(data.location);
+          if (data.linkedin_url) setLinkedinUrl(data.linkedin_url);
+          if (data.portfolio_url) setPortfolioUrl(data.portfolio_url);
+          if (data.work_authorization) setWorkAuthorization(data.work_authorization);
+          if (data.current_title) setCurrentTitle(data.current_title);
+          if (data.experience_level) setExperienceLevel(data.experience_level);
+          if (data.years_experience !== undefined && data.years_experience !== null) {
+            setYearsExperience(String(data.years_experience));
+          }
+          if (Array.isArray(data.skills)) setSkills(data.skills);
+          if (Array.isArray(data.industries)) setIndustries(data.industries);
+          if (Array.isArray(data.work_experience)) setWorkExperience(data.work_experience);
+          if (Array.isArray(data.education) && data.education[0]) {
+            const edu = data.education[0];
+            if (edu.degree) setEduDegree(edu.degree);
+            if (edu.field) setEduField(edu.field);
+            if (edu.institution) setEduInstitution(edu.institution);
+            if (edu.year) setEduYear(edu.year);
+          }
+          if (Array.isArray(data.job_titles_seeking)) setJobTitlesSeeking(data.job_titles_seeking.join(", "));
+          if (data.remote_preference) setRemotePreference(data.remote_preference);
+          if (data.salary_expectation) setSalaryExpectation(data.salary_expectation);
+          if (Array.isArray(data.preferred_locations)) setPreferredLocations(data.preferred_locations.join(", "));
+          if (data.cover_letter_tone) setCoverLetterTone(data.cover_letter_tone);
+
+          setStatus({ success: true, message: "AI extraction successful! Please review and save your profile." });
+        }}
+        onExtractError={(msg) => {
+          setStatus({ success: false, message: msg });
+        }}
       />
 
       {/* 3. Status Alert banner */}

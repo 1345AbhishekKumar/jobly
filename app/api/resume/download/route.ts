@@ -9,11 +9,38 @@ export async function GET() {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  // Download the file from the resumes bucket
-  // Path is resumes/{user_id}/resume.pdf
+  // Fetch existing profile to get the actual resume URL
+  const { data: profile, error: dbError } = await insforge.database
+    .from("profiles")
+    .select("resume_pdf_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (dbError || !profile?.resume_pdf_url) {
+    console.error("Failed to fetch profile resume URL:", dbError);
+    return new Response("Resume URL not found in profile", { status: 404 });
+  }
+
+  // Parse the key and filename
+  let key = `${user.id}/resume.pdf`; // fallback
+  let filename = "resume.pdf";
+  try {
+    const urlObj = new URL(profile.resume_pdf_url);
+    const objectsPrefix = "/objects/";
+    const objectsIndex = urlObj.pathname.indexOf(objectsPrefix);
+    if (objectsIndex !== -1) {
+      const encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
+      key = decodeURIComponent(encodedKey);
+      filename = key.substring(key.lastIndexOf("/") + 1);
+    }
+  } catch (err) {
+    console.warn("Failed to parse resume storage URL:", err);
+  }
+
+  // Download the file using the actual key
   const { data: blob, error } = await insforge.storage
     .from("resumes")
-    .download(`${user.id}/resume.pdf`);
+    .download(key);
 
   if (error || !blob) {
     console.error("Failed to download resume from storage:", error);
@@ -24,7 +51,7 @@ export async function GET() {
   return new Response(blob, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": "inline",
+      "Content-Disposition": `inline; filename="${filename}"`,
     },
   });
 }

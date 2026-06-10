@@ -138,7 +138,37 @@ export async function uploadResume(formData: FormData) {
     return { success: false, message: "No file provided" };
   }
 
-  const fileName = `${user.id}/resume.pdf`;
+  // Fetch existing profile to get the old resume URL
+  const { data: profile } = await insforge.database
+    .from("profiles")
+    .select("resume_pdf_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  // Delete the old file if it exists in the database
+  if (profile?.resume_pdf_url) {
+    try {
+      const urlObj = new URL(profile.resume_pdf_url);
+      const objectsPrefix = "/objects/";
+      const objectsIndex = urlObj.pathname.indexOf(objectsPrefix);
+      if (objectsIndex !== -1) {
+        const encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
+        const oldKey = decodeURIComponent(encodedKey);
+        await insforge.storage.from("resumes").remove(oldKey);
+      }
+    } catch (err) {
+      console.warn("Failed to delete old resume from storage:", err);
+    }
+  }
+
+  // Also remove the target path explicitly just in case using the original name
+  const fileName = `${user.id}/${file.name}`;
+  try {
+    await insforge.storage.from("resumes").remove(fileName);
+  } catch (err) {
+    // Ignore error if it doesn't exist
+  }
+
   const { data: uploadData, error: uploadError } = await insforge.storage
     .from("resumes")
     .upload(fileName, file);
