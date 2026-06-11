@@ -6,8 +6,9 @@ import { SearchForm } from "./SearchForm";
 import { FilterSortBar } from "./FilterSortBar";
 import { JobsTable } from "./JobsTable";
 import { Pagination } from "./Pagination";
+import { MATCH_THRESHOLD } from "@/lib/utils";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 20;
 
 interface FindJobsClientProps {
   initialJobs: any[];
@@ -123,9 +124,9 @@ export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
 
     // Filter by Match Score Strength
     if (matchFilter === "strong") {
-      result = result.filter((job) => job.matchScore >= 70);
+      result = result.filter((job) => job.matchScore >= MATCH_THRESHOLD);
     } else if (matchFilter === "weak") {
-      result = result.filter((job) => job.matchScore < 70);
+      result = result.filter((job) => job.matchScore < MATCH_THRESHOLD);
     }
 
     // Sort
@@ -162,7 +163,7 @@ export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
 
   // Derive counts for banner
   const strongMatchesCount = useMemo(() => {
-    return dbJobs.filter((j) => j.matchScore >= 70).length;
+    return dbJobs.filter((j) => j.matchScore >= MATCH_THRESHOLD).length;
   }, [dbJobs]);
 
   return (

@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { Job } from "./types";
+import { MATCH_THRESHOLD } from "@/lib/utils";
 
 interface JobsTableProps {
   jobs: Job[];
@@ -12,10 +13,10 @@ export function JobsTable({ jobs, formatDate }: JobsTableProps) {
   // Render score bar and color matching reference image
   const renderScoreBar = (score: number) => {
     let barColor = "bg-success"; // Green (>= 90%)
-    if (score < 80) {
-      barColor = "bg-warning"; // Orange (< 80%)
+    if (score < MATCH_THRESHOLD) {
+      barColor = "bg-warning"; // Orange (< MATCH_THRESHOLD)
     } else if (score < 90) {
-      barColor = "bg-info-dark"; // Blue (80% - 89%)
+      barColor = "bg-info-dark"; // Blue (MATCH_THRESHOLD - 89%)
     }
 
     return (
