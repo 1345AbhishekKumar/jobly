@@ -21,14 +21,13 @@ export function Testimonial() {
 
           {/* Author Info */}
           <div className="flex items-center justify-center gap-3">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-border-light bg-surface">
-              <Image
-                src="/images/user-icon.png"
-                alt="Liam Vance Avatar"
-                fill
-                className="object-cover"
-              />
-            </div>
+            <Image
+              src="/images/user-icon.png"
+              alt="Liam Vance Avatar"
+              width={40}
+              height={40}
+              className="object-cover rounded-full border border-border-light bg-surface"
+            />
             <div className="text-left">
               <div className="text-sm font-bold text-text-primary leading-tight">
                 Liam Vance

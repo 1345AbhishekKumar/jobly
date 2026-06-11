@@ -186,7 +186,7 @@ export async function researchCompany(
     } finally {
       if (browser) {
         console.log("[Research Agent] Closing Playwright browser...");
-        await browser.close().catch((err: unknown) => {
+        await (browser as Browser).close().catch((err: unknown) => {
           const errM = err instanceof Error ? err.message : String(err);
           console.error("[Research Agent] Error closing browser:", errM);
         });

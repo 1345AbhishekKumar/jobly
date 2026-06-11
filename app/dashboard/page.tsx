@@ -5,6 +5,8 @@ import { Footer } from "@/components/layout/Footer";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import Link from "next/link";
 import { Profile, Education, WorkExperience } from "@/types";
+import { getDashboardChartsData } from "@/lib/posthogQuery";
+
 
 // Helper to calculate completeness percentage and missing fields list
 // Matches actions/profile.ts server-side validation logic
@@ -113,7 +115,7 @@ export default async function DashboardPage() {
   // Fetch jobs for stats calculation (and company research counts)
   const { data: jobs } = await insforge.database
     .from("jobs")
-    .select("id, match_score, company_research, found_at, created_at")
+    .select("id, match_score, company_research, found_at")
     .eq("user_id", user.id);
 
   // Fetch recent agent runs
@@ -127,7 +129,7 @@ export default async function DashboardPage() {
   // Fetch recent jobs that have company research dossiers completed
   const { data: researchedJobs } = await insforge.database
     .from("jobs")
-    .select("id, company, found_at, created_at")
+    .select("id, company, found_at")
     .eq("user_id", user.id)
     .not("company_research", "is", null)
     .order("found_at", { ascending: false })
@@ -148,7 +150,7 @@ export default async function DashboardPage() {
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   const jobsThisWeekCount = jobs
-    ? jobs.filter((j: { found_at?: string | null; created_at?: string | null }) => new Date(j.found_at || j.created_at || "") >= oneWeekAgo).length
+    ? jobs.filter((j: { found_at?: string | null }) => new Date(j.found_at || "") >= oneWeekAgo).length
     : 0;
 
   // Merge, sort and format recent activities
@@ -174,8 +176,8 @@ export default async function DashboardPage() {
   }
 
   if (researchedJobs) {
-    researchedJobs.forEach((job: { company: string; found_at?: string | null; created_at?: string | null }) => {
-      const timestampStr = job.found_at || job.created_at;
+    researchedJobs.forEach((job: { company: string; found_at?: string | null }) => {
+      const timestampStr = job.found_at;
       if (timestampStr) {
         activities.push({
           title: `Researched ${job.company}`,
@@ -191,6 +193,9 @@ export default async function DashboardPage() {
   // Sort activities by date descending
   activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   const recentActivities = activities.slice(0, 5);
+
+  // Fetch charts data from PostHog or DB fallback
+  const { jobsFoundData, matchScoreData, companyResearchData } = await getDashboardChartsData(user.id);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -227,6 +232,9 @@ export default async function DashboardPage() {
             jobsThisWeekCount
           }}
           recentActivities={recentActivities}
+          jobsFoundData={jobsFoundData}
+          matchScoreData={matchScoreData}
+          companyResearchData={companyResearchData}
         />
       </main>
 

@@ -57,12 +57,13 @@ export function Hero() {
           </div>
 
           {/* Browser Content */}
-          <div className="relative aspect-[1024/576] w-full overflow-hidden bg-background">
+          <div className="w-full overflow-hidden bg-background">
             <Image
               src="/images/dashboard-demo.png"
               alt="JobPilot Dashboard Preview"
-              fill
-              className="object-cover object-top"
+              width={1024}
+              height={576}
+              className="w-full h-auto object-cover object-top"
               priority
             />
           </div>

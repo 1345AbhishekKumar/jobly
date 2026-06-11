@@ -7,7 +7,7 @@ import { RecentActivity } from "./RecentActivity";
 import {
   MatchScoreChart,
   JobsFoundChart,
-  ResumeTailoringChart,
+  CompanyResearchChart,
 } from "./ChartsSection";
 
 interface DashboardContentProps {
@@ -26,6 +26,9 @@ interface DashboardContentProps {
     desc: string;
     dotColor: string;
   }[];
+  jobsFoundData: { date?: string; count: number }[];
+  matchScoreData: { range: string; count: number }[];
+  companyResearchData: { day?: string; count: number }[];
 }
 
 export function DashboardContent({
@@ -34,6 +37,9 @@ export function DashboardContent({
   missingFields,
   stats,
   recentActivities,
+  jobsFoundData,
+  matchScoreData,
+  companyResearchData,
 }: DashboardContentProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -64,13 +70,13 @@ export function DashboardContent({
       {/* 3. Activity Timeline + Match Score Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <RecentActivity activities={recentActivities} />
-        <MatchScoreChart mounted={mounted} />
+        <MatchScoreChart mounted={mounted} data={matchScoreData} />
       </div>
 
-      {/* 4. Jobs Found Over Time + Resume Tailoring charts */}
+      {/* 4. Jobs Found Over Time + Company Research charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <JobsFoundChart mounted={mounted} />
-        <ResumeTailoringChart mounted={mounted} />
+        <JobsFoundChart mounted={mounted} data={jobsFoundData} />
+        <CompanyResearchChart mounted={mounted} data={companyResearchData} />
       </div>
     </div>
   );

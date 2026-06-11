@@ -7,14 +7,13 @@ export function Footer() {
       <div className="mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="relative h-8 w-8 overflow-hidden rounded-[8px]">
-            <Image
-              src="/logo.png"
-              alt="JobPilot Logo"
-              fill
-              className="object-cover"
-            />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="JobPilot Logo"
+            width={32}
+            height={32}
+            className="object-cover rounded-[8px]"
+          />
           <span className="text-[16px] font-bold leading-6 text-text-darkest">
             JobPilot
           </span>

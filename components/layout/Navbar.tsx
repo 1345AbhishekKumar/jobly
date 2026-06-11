@@ -12,15 +12,14 @@ export async function Navbar() {
       <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="relative h-9 w-9 overflow-hidden rounded-[10px]">
-            <Image
-              src="/logo.png"
-              alt="JobPilot Logo"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="JobPilot Logo"
+            width={36}
+            height={36}
+            className="object-cover rounded-[10px]"
+            priority
+          />
           <span className="text-[19px] font-bold leading-7 text-text-darkest font-display">
             JobPilot
           </span>

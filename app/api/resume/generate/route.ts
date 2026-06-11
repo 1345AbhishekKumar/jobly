@@ -54,7 +54,7 @@ export async function POST() {
           education: profile.education,
         },
         polished: polishedContent,
-      }) as React.ReactElement
+      }) as any
     );
 
     // 4. Clean up any existing resume in storage (to avoid auto-renaming)

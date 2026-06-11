@@ -12,6 +12,8 @@
 .impeccable
 .agents
 .next
+.claude
+.codex
 
 # testing
 /coverage

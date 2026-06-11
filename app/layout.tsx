@@ -31,7 +31,10 @@ export default function RootLayout({
       className={`${inter.variable} ${plusJakarta.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background font-sans text-text-primary">
+      <body
+        className="min-h-full flex flex-col bg-background font-sans text-text-primary"
+        suppressHydrationWarning
+      >
           <PostHogProvider>
             <Suspense fallback={null}>
               <PostHogPageView />

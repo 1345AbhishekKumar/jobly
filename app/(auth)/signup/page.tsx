@@ -114,9 +114,7 @@ export default function SignupPage() {
         {/* Brand */}
         <div className="flex flex-col items-center">
           <Link href="/" className="flex items-center gap-2 mb-6">
-            <div className="relative h-10 w-10 overflow-hidden rounded-[10px]">
-              <Image src="/logo.png" alt="JobPilot Logo" fill className="object-cover" priority />
-            </div>
+            <Image src="/logo.png" alt="JobPilot Logo" width={40} height={40} className="object-cover rounded-[10px]" priority />
             <span className="text-2xl font-bold leading-7 text-text-darkest font-display">JobPilot</span>
           </Link>
           <h2 className="text-3xl font-semibold text-text-primary tracking-tight font-display text-center">
