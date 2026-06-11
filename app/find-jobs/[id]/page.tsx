@@ -22,16 +22,28 @@ export default async function JobDetailsPage({ params }: PageProps) {
     redirect(`/login?redirectTo=/find-jobs/${id}`);
   }
 
-  // Fetch the specific job by id and scope it to current user_id
-  const { data: job, error: jobError } = await insforge.database
-    .from("jobs")
-    .select("*")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
+  // Validate if the ID is a valid UUID to avoid PostgreSQL syntax casting errors (22P02)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const isValidUuid = uuidRegex.test(id);
+
+  let job = null;
+  let jobError = null;
+
+  if (isValidUuid) {
+    const { data, error } = await insforge.database
+      .from("jobs")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+    job = data;
+    jobError = error;
+  }
 
   if (jobError || !job) {
-    console.error("[JobDetailsPage] Failed to fetch job:", id, jobError);
+    if (jobError) {
+      console.error("[JobDetailsPage] Failed to fetch job:", id, jobError);
+    }
     
     // Render a clean 404 state matching the design system
     return (

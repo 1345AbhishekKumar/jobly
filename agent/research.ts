@@ -86,12 +86,34 @@ async function scrapePageText(page: any, url: string, maxChars = 4000): Promise<
 async function discoverSubPages(page: any, baseUrl: string): Promise<string[]> {
   try {
     console.log("[Scraper] Discovering sub-pages...");
-    const links = await page.evaluate(() => {
-      const anchors = Array.from(document.querySelectorAll("a"));
-      return anchors
-        .map((a) => a.href)
-        .filter((href) => href && href.startsWith("http"));
-    });
+    
+    // Wait for the page load state to fully settle
+    await page.waitForLoadState("load", { timeout: 5000 }).catch(() => {});
+    
+    // Brief delay to allow client-side routers or hydration redirects to complete
+    await page.waitForTimeout(1000).catch(() => {});
+
+    let links: string[] = [];
+    try {
+      links = await page.evaluate(() => {
+        const anchors = Array.from(document.querySelectorAll("a"));
+        return anchors
+          .map((a) => a.href)
+          .filter((href) => href && href.startsWith("http"));
+      });
+    } catch (evalErr: any) {
+      console.warn(`[Scraper] Link discovery evaluate failed: ${evalErr.message || String(evalErr)}. Retrying after settling load state...`);
+      // Wait for any active navigation/load to settle and try again
+      await page.waitForLoadState("domcontentloaded", { timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(1500).catch(() => {});
+      
+      links = await page.evaluate(() => {
+        const anchors = Array.from(document.querySelectorAll("a"));
+        return anchors
+          .map((a) => a.href)
+          .filter((href) => href && href.startsWith("http"));
+      });
+    }
 
     const rootUrl = new URL(baseUrl);
     const origin = rootUrl.origin;
@@ -115,8 +137,8 @@ async function discoverSubPages(page: any, baseUrl: string): Promise<string[]> {
 
     console.log(`[Scraper] Discovered ${relevantLinks.length} potential sub-pages`);
     return relevantLinks.slice(0, 3); // Crawl up to 3 subpages
-  } catch (err) {
-    console.error("[Scraper] Error discovering sub pages:", err);
+  } catch (err: any) {
+    console.error("[Scraper] Error discovering sub pages:", err.message || String(err));
     return [];
   }
 }

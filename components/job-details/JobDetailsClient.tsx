@@ -67,6 +67,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
   const router = useRouter();
   const [isResearching, setIsResearching] = useState(false);
   const [researchError, setResearchError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"company" | "fit" | "prep">("company");
 
   // Match score visual styling matching system guidelines
   const score = job.match_score || 0;
@@ -475,155 +476,205 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
               </div>
             ) : (
               // Populated Research State (Premium Dossier View)
-              <div className="space-y-6 divide-y divide-border pt-1">
-                
-                {/* Company Overview */}
-                {job.company_research.companyOverview && (
-                  <div className="space-y-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-                      Company Overview
-                    </h3>
-                    <p className="text-sm text-text-primary leading-relaxed">
-                      {job.company_research.companyOverview}
-                    </p>
-                  </div>
-                )}
+              <div className="space-y-4 pt-1">
+                {/* Sleek Segmented Control Header */}
+                <div className="flex p-1 bg-surface-secondary border border-border rounded-lg mb-2">
+                  <button
+                    onClick={() => setActiveTab("company")}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      activeTab === "company"
+                        ? "bg-surface text-accent shadow-sm border border-border"
+                        : "text-text-secondary hover:text-text-primary"
+                    }`}
+                  >
+                    Company
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("fit")}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      activeTab === "fit"
+                        ? "bg-surface text-accent shadow-sm border border-border"
+                        : "text-text-secondary hover:text-text-primary"
+                    }`}
+                  >
+                    My Fit
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("prep")}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      activeTab === "prep"
+                        ? "bg-surface text-accent shadow-sm border border-border"
+                        : "text-text-secondary hover:text-text-primary"
+                    }`}
+                  >
+                    Prep Guide
+                  </button>
+                </div>
 
-                {/* Tech Stack */}
-                {job.company_research.techStack && job.company_research.techStack.length > 0 && (
-                  <div className="space-y-2 pt-4">
-                    <div className="flex items-center gap-2 text-text-secondary">
-                      <Terminal className="h-4 w-4" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider">
-                        Tech Stack
-                      </h3>
+                <div className="divide-y divide-border space-y-4">
+                  {/* Tab 1: Company Profile */}
+                  {activeTab === "company" && (
+                    <div className="space-y-4 animate-fade-in">
+                      {/* Company Overview */}
+                      {job.company_research.companyOverview && (
+                        <div className="space-y-2">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                            Company Overview
+                          </h3>
+                          <p className="text-sm text-text-primary leading-relaxed">
+                            {job.company_research.companyOverview}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Tech Stack */}
+                      {job.company_research.techStack && job.company_research.techStack.length > 0 && (
+                        <div className="space-y-2 pt-3 border-t border-border">
+                          <div className="flex items-center gap-2 text-text-secondary">
+                            <Terminal className="h-4 w-4" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider">
+                              Tech Stack
+                            </h3>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {job.company_research.techStack.map((tech) => (
+                              <span
+                                key={tech}
+                                className="inline-flex items-center rounded-md bg-surface-secondary border border-border px-2 py-0.5 text-xs font-medium text-text-primary"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Culture */}
+                      {job.company_research.culture && job.company_research.culture.length > 0 && (
+                        <div className="space-y-2 pt-3 border-t border-border">
+                          <div className="flex items-center gap-2 text-text-secondary">
+                            <Users className="h-4 w-4" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider">
+                              Culture & Values
+                            </h3>
+                          </div>
+                          <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
+                            {job.company_research.culture.map((val, idx) => (
+                              <li key={idx} className="leading-relaxed">{val}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {job.company_research.techStack.map((tech) => (
-                        <span
-                          key={tech}
-                          className="inline-flex items-center rounded-md bg-surface-secondary border border-border px-2 py-0.5 text-xs font-medium text-text-primary"
-                        >
-                          {tech}
-                        </span>
-                      ))}
+                  )}
+
+                  {/* Tab 2: Candidate Fit */}
+                  {activeTab === "fit" && (
+                    <div className="space-y-4 animate-fade-in">
+                      {/* Why This Role */}
+                      {job.company_research.whyThisRole && (
+                        <div className="space-y-2">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                            Strategic Importance of Role
+                          </h3>
+                          <p className="text-sm text-text-primary leading-relaxed">
+                            {job.company_research.whyThisRole}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Your Edge */}
+                      {job.company_research.yourEdge && job.company_research.yourEdge.length > 0 && (
+                        <div className="space-y-2 pt-3 border-t border-border">
+                          <div className="flex items-center gap-2 text-success">
+                            <Target className="h-4 w-4" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                              Your Edge
+                            </h3>
+                          </div>
+                          <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
+                            {job.company_research.yourEdge.map((edge, idx) => (
+                              <li key={idx} className="leading-relaxed">{edge}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Gaps to Address */}
+                      {job.company_research.gapsToAddress && job.company_research.gapsToAddress.length > 0 && (
+                        <div className="space-y-2 pt-3 border-t border-border">
+                          <div className="flex items-center gap-2 text-accent">
+                            <HelpCircle className="h-4 w-4" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                              Addressing Skills Gaps
+                            </h3>
+                          </div>
+                          <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
+                            {job.company_research.gapsToAddress.map((gap, idx) => (
+                              <li key={idx} className="leading-relaxed">{gap}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Culture */}
-                {job.company_research.culture && job.company_research.culture.length > 0 && (
-                  <div className="space-y-2 pt-4">
-                    <div className="flex items-center gap-2 text-text-secondary">
-                      <Users className="h-4 w-4" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider">
-                        Culture & Values
-                      </h3>
+                  {/* Tab 3: Preparation Guide */}
+                  {activeTab === "prep" && (
+                    <div className="space-y-4 animate-fade-in">
+                      {/* Interview Prep */}
+                      {job.company_research.interviewPrep && job.company_research.interviewPrep.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-text-secondary">
+                            <BookOpen className="h-4 w-4" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider">
+                              Interview Prep
+                            </h3>
+                          </div>
+                          <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
+                            {job.company_research.interviewPrep.map((prep, idx) => (
+                              <li key={idx} className="leading-relaxed">{prep}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Smart Questions */}
+                      {job.company_research.smartQuestions && job.company_research.smartQuestions.length > 0 && (
+                        <div className="space-y-2 pt-3 border-t border-border">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                            Questions to Ask Them
+                          </h3>
+                          <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
+                            {job.company_research.smartQuestions.map((q, idx) => (
+                              <li key={idx} className="leading-relaxed font-medium text-text-dark">{q}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Sources */}
+                      {job.company_research.sources && job.company_research.sources.length > 0 && (
+                        <div className="space-y-2 pt-3 border-t border-border text-[10px] text-text-muted">
+                          <span className="font-semibold uppercase tracking-wider">Researched Pages</span>
+                          <div className="flex flex-wrap gap-x-2 gap-y-1 mt-1">
+                            {job.company_research.sources.map((src, idx) => (
+                              <a
+                                key={idx}
+                                href={src}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline hover:text-accent truncate max-w-[200px]"
+                              >
+                                {src}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
-                      {job.company_research.culture.map((val, idx) => (
-                        <li key={idx} className="leading-relaxed">{val}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Why This Role */}
-                {job.company_research.whyThisRole && (
-                  <div className="space-y-2 pt-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-                      Strategic Importance of Role
-                    </h3>
-                    <p className="text-sm text-text-primary leading-relaxed">
-                      {job.company_research.whyThisRole}
-                    </p>
-                  </div>
-                )}
-
-                {/* Your Edge */}
-                {job.company_research.yourEdge && job.company_research.yourEdge.length > 0 && (
-                  <div className="space-y-2 pt-4">
-                    <div className="flex items-center gap-2 text-success">
-                      <Target className="h-4 w-4" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-                        Your Edge
-                      </h3>
-                    </div>
-                    <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
-                      {job.company_research.yourEdge.map((edge, idx) => (
-                        <li key={idx} className="leading-relaxed">{edge}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Gaps to Address */}
-                {job.company_research.gapsToAddress && job.company_research.gapsToAddress.length > 0 && (
-                  <div className="space-y-2 pt-4">
-                    <div className="flex items-center gap-2 text-accent">
-                      <HelpCircle className="h-4 w-4" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-                        Addressing Skills Gaps
-                      </h3>
-                    </div>
-                    <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
-                      {job.company_research.gapsToAddress.map((gap, idx) => (
-                        <li key={idx} className="leading-relaxed">{gap}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Interview Prep */}
-                {job.company_research.interviewPrep && job.company_research.interviewPrep.length > 0 && (
-                  <div className="space-y-2 pt-4">
-                    <div className="flex items-center gap-2 text-text-secondary">
-                      <BookOpen className="h-4 w-4" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider">
-                        Interview Prep
-                      </h3>
-                    </div>
-                    <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
-                      {job.company_research.interviewPrep.map((prep, idx) => (
-                        <li key={idx} className="leading-relaxed">{prep}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Smart Questions */}
-                {job.company_research.smartQuestions && job.company_research.smartQuestions.length > 0 && (
-                  <div className="space-y-2 pt-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-                      Questions to Ask Them
-                    </h3>
-                    <ul className="list-disc pl-4 text-xs text-text-primary space-y-1.5">
-                      {job.company_research.smartQuestions.map((q, idx) => (
-                        <li key={idx} className="leading-relaxed font-medium text-text-dark">{q}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Sources */}
-                {job.company_research.sources && job.company_research.sources.length > 0 && (
-                  <div className="space-y-2 pt-4 text-[10px] text-text-muted">
-                    <span className="font-semibold uppercase tracking-wider">Researched Pages</span>
-                    <div className="flex flex-wrap gap-x-2 gap-y-1 mt-1">
-                      {job.company_research.sources.map((src, idx) => (
-                        <a
-                          key={idx}
-                          href={src}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline hover:text-accent truncate max-w-[200px]"
-                        >
-                          {src}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </div>
