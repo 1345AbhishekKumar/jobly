@@ -94,8 +94,9 @@ export async function extractProfileFromResume(): Promise<ExtractionResult> {
     const extractedData = await extractResumeWithNvidiaAI(cleanText);
 
     return { success: true, data: extractedData };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in extractProfileFromResume server action:", error);
-    return { success: false, message: error.message || "An unexpected error occurred during extraction." };
+    const message = error instanceof Error ? error.message : "An unexpected error occurred during extraction.";
+    return { success: false, message };
   }
 }

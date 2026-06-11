@@ -10,8 +10,19 @@ import { MATCH_THRESHOLD } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 20;
 
+interface DBJob {
+  id: string;
+  company: string;
+  title: string;
+  match_score: number;
+  salary?: string | null;
+  source?: string | null;
+  found_at?: string | null;
+  created_at?: string | null;
+}
+
 interface FindJobsClientProps {
-  initialJobs: any[];
+  initialJobs: DBJob[];
 }
 
 export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
@@ -85,9 +96,10 @@ export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
 
       // Force Next.js to revalidate/refresh server page data
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[FindJobsClient] Search failed:", err);
-      setSearchError(err.message || "An unexpected error occurred during search.");
+      const errMsg = err instanceof Error ? err.message : "An unexpected error occurred during search.";
+      setSearchError(errMsg);
       setShowSuccessBanner(false);
     } finally {
       setIsSearching(false);

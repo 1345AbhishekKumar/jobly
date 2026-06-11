@@ -1,7 +1,10 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { openai } from "@/lib/nvidia";
 import { createPostHogServer } from "@/lib/posthog-server";
-import { chromium } from "playwright";
+import { chromium, Browser } from "playwright";
+
+import { logAgentMessage } from "./research/logger";
+import { scrapePageText, discoverSubPages, resolveHomepageUrl } from "./research/scraper";
 
 export interface CompanyResearchDossier {
   companyOverview: string;
@@ -13,183 +16,6 @@ export interface CompanyResearchDossier {
   smartQuestions: string[];
   interviewPrep: string[];
   sources: string[];
-}
-
-async function logAgentMessage(
-  insforge: any,
-  runId: string,
-  userId: string,
-  message: string,
-  level: "info" | "success" | "warning" | "error",
-  jobId: string | null = null
-) {
-  console.log(`[Agent Log - ${level.toUpperCase()}] ${message}`);
-  try {
-    await insforge.database.from("agent_logs").insert([
-      {
-        run_id: runId,
-        user_id: userId,
-        message,
-        level,
-        job_id: jobId,
-        created_at: new Date().toISOString(),
-      }
-    ]);
-  } catch (err) {
-    console.error("Failed to write agent log:", err);
-  }
-}
-
-// Scrapes a given URL and returns cleaned text up to maxChars
-async function scrapePageText(page: any, url: string, maxChars = 4000): Promise<string> {
-  try {
-    console.log(`[Scraper] Navigating to: ${url}`);
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10000 });
-    console.log(`[Scraper] Page loaded: ${url}`);
-    
-    // Extract main text content. Filter out scripts, styles, header, footer, nav to minimize token count.
-    const text = await page.evaluate(() => {
-      const elementsToRemove = document.querySelectorAll("script, style, head, nav, footer, header, noscript, svg, iframe, path");
-      const removedElements: { element: Element; parent: Node; nextSibling: Node | null }[] = [];
-      
-      elementsToRemove.forEach((el) => {
-        if (el.parentNode) {
-          removedElements.push({
-            element: el,
-            parent: el.parentNode,
-            nextSibling: el.nextSibling,
-          });
-          el.parentNode.removeChild(el);
-        }
-      });
-      
-      const bodyText = document.body ? document.body.innerText || document.body.textContent || "" : "";
-      
-      // Restore the removed elements
-      removedElements.forEach(({ element, parent, nextSibling }) => {
-        parent.insertBefore(element, nextSibling);
-      });
-      
-      return bodyText;
-    });
-
-    console.log(`[Scraper] Extracted text length: ${text.length} characters`);
-    // Clean whitespace and return substring
-    return text.replace(/\s+/g, " ").trim().substring(0, maxChars);
-  } catch (err: any) {
-    console.error(`[Scraper] Error scraping page ${url}:`, err.message || String(err));
-    return "";
-  }
-}
-
-// Discover internal links from homepage
-async function discoverSubPages(page: any, baseUrl: string): Promise<string[]> {
-  try {
-    console.log("[Scraper] Discovering sub-pages...");
-    
-    // Wait for the page load state to fully settle
-    await page.waitForLoadState("load", { timeout: 5000 }).catch(() => {});
-    
-    // Brief delay to allow client-side routers or hydration redirects to complete
-    await page.waitForTimeout(1000).catch(() => {});
-
-    let links: string[] = [];
-    try {
-      links = await page.evaluate(() => {
-        const anchors = Array.from(document.querySelectorAll("a"));
-        return anchors
-          .map((a) => a.href)
-          .filter((href) => href && href.startsWith("http"));
-      });
-    } catch (evalErr: any) {
-      console.warn(`[Scraper] Link discovery evaluate failed: ${evalErr.message || String(evalErr)}. Retrying after settling load state...`);
-      // Wait for any active navigation/load to settle and try again
-      await page.waitForLoadState("domcontentloaded", { timeout: 5000 }).catch(() => {});
-      await page.waitForTimeout(1500).catch(() => {});
-      
-      links = await page.evaluate(() => {
-        const anchors = Array.from(document.querySelectorAll("a"));
-        return anchors
-          .map((a) => a.href)
-          .filter((href) => href && href.startsWith("http"));
-      });
-    }
-
-    const rootUrl = new URL(baseUrl);
-    const origin = rootUrl.origin;
-
-    const uniqueLinks = Array.from(new Set(links)) as string[];
-    
-    const relevantLinks = uniqueLinks.filter((link) => {
-      try {
-        const linkUrl = new URL(link);
-        if (linkUrl.origin !== origin) return false;
-        
-        const path = linkUrl.pathname.toLowerCase();
-        if (path === "/" || path === "") return false;
-        
-        const matches = ["about", "career", "team", "blog", "product", "culture", "eng", "value"];
-        return matches.some((keyword) => path.includes(keyword));
-      } catch {
-        return false;
-      }
-    });
-
-    console.log(`[Scraper] Discovered ${relevantLinks.length} potential sub-pages`);
-    return relevantLinks.slice(0, 3); // Crawl up to 3 subpages
-  } catch (err: any) {
-    console.error("[Scraper] Error discovering sub pages:", err.message || String(err));
-    return [];
-  }
-}
-
-// Try following redirect via server fetch
-async function resolveHomepageUrl(company: string, sourceUrl?: string, externalApplyUrl?: string): Promise<{ resolvedUrl: string; sources: string[] }> {
-  console.log(`[URL Resolver] Resolving homepage for company: ${company}`);
-  const sources: string[] = [];
-  const targetUrl = externalApplyUrl || sourceUrl;
-  
-  if (targetUrl) {
-    try {
-      console.log(`[URL Resolver] Following redirects for: ${targetUrl}`);
-      const res = await fetch(targetUrl, {
-        method: "GET",
-        redirect: "follow",
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        },
-      });
-      
-      const finalUrl = res.url;
-      console.log(`[URL Resolver] Final redirected URL: ${finalUrl}`);
-      if (finalUrl && !finalUrl.includes("adzuna.com")) {
-        const urlObj = new URL(finalUrl);
-        const parts = urlObj.hostname.split(".");
-        let rootDomain = urlObj.hostname;
-        if (parts.length >= 2) {
-          // Keep subdomain if it's typical but strip www
-          rootDomain = parts.filter(p => p !== "www").join(".");
-        }
-        const homepage = `https://${rootDomain}`;
-        sources.push(homepage);
-        console.log(`[URL Resolver] Extracted root homepage: ${homepage}`);
-        return { resolvedUrl: homepage, sources };
-      }
-    } catch (err: any) {
-      console.warn(`[URL Resolver] Failed to resolve redirect: ${err.message || String(err)}`);
-    }
-  }
-
-  // Fallback cleanup
-  const cleanName = company
-    .replace(/\s*(Inc\.?|LLC|Ltd\.?|Corp\.?|Co\.?).*$/i, "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "");
-  const homepage = `https://www.${cleanName}.com`;
-  sources.push(homepage);
-  console.log(`[URL Resolver] Fallback URL: ${homepage}`);
-  return { resolvedUrl: homepage, sources };
 }
 
 export async function researchCompany(
@@ -291,7 +117,7 @@ export async function researchCompany(
     let collectedResearch = "";
 
     // 5. Scrape using Playwright Chromium with 20-second timeout
-    let browser: any;
+    let browser: Browser | null = null;
     try {
       console.log("[Research Agent] Starting browser scraper task with timeout...");
       await logAgentMessage(
@@ -320,7 +146,6 @@ export async function researchCompany(
           collectedResearch += `--- HOMEPAGE (${resolvedUrl}) ---\n${homepageText}\n\n`;
         }
 
-        // Discover sub-pages
         const subPages = await discoverSubPages(page, resolvedUrl);
         await logAgentMessage(
           insforge,
@@ -340,7 +165,6 @@ export async function researchCompany(
         }
       })();
 
-      // 20-second timeout for the scraping phase
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Scraping phase timed out after 20 seconds")), 20000)
       );
@@ -348,20 +172,24 @@ export async function researchCompany(
       await Promise.race([scrapePromise, timeoutPromise]);
       console.log("[Research Agent] Scraping completed successfully.");
 
-    } catch (browserErr: any) {
-      console.error("[Research Agent] Playwright scraping interrupted or failed:", browserErr.message || String(browserErr));
+    } catch (browserErr: unknown) {
+      const browserErrMsg = browserErr instanceof Error ? browserErr.message : String(browserErr);
+      console.error("[Research Agent] Playwright scraping interrupted or failed:", browserErrMsg);
       await logAgentMessage(
         insforge,
         runId,
         userId,
-        `Browser scraping interrupted: ${browserErr.message || String(browserErr)}. Proceeding with fallback AI synthesis.`,
+        `Browser scraping interrupted: ${browserErrMsg}. Proceeding with fallback AI synthesis.`,
         "warning",
         jobId
       );
     } finally {
       if (browser) {
         console.log("[Research Agent] Closing Playwright browser...");
-        await browser.close().catch((err: any) => console.error("[Research Agent] Error closing browser:", err.message || err));
+        await browser.close().catch((err: unknown) => {
+          const errM = err instanceof Error ? err.message : String(err);
+          console.error("[Research Agent] Error closing browser:", errM);
+        });
       }
     }
 
@@ -470,7 +298,6 @@ Candidate Work History: ${JSON.stringify(profile?.work_experience || [])}`;
         jobId
       );
       
-      // Fallback synthesis
       dossier = {
         companyOverview: `${job.company} is a leading organization seeking a talented ${job.title} to join their team in ${job.location}.`,
         techStack: job.requirements || [],
@@ -519,7 +346,6 @@ Candidate Work History: ${JSON.stringify(profile?.work_experience || [])}`;
       jobId
     );
 
-    // Track PostHog event
     posthog.capture({
       distinctId: userId,
       event: "company_researched",
@@ -531,7 +357,8 @@ Candidate Work History: ${JSON.stringify(profile?.work_experience || [])}`;
 
     return { success: true, dossier };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
     console.error("[Research Agent] Fatal error occurred:", error);
 
     if (runId) {
@@ -548,7 +375,7 @@ Candidate Work History: ${JSON.stringify(profile?.work_experience || [])}`;
           insforge,
           runId,
           userId,
-          `Company research failed: ${error.message || String(error)}`,
+          `Company research failed: ${errorMsg}`,
           "error",
           jobId
         );
@@ -560,11 +387,11 @@ Candidate Work History: ${JSON.stringify(profile?.work_experience || [])}`;
     posthog.capture({
       distinctId: userId,
       event: "company_research_failed",
-      properties: { userId, jobId, company: companyNameForPostHog, error: error.message || String(error) },
+      properties: { userId, jobId, company: companyNameForPostHog, error: errorMsg },
     });
 
     await posthog.shutdown();
 
-    return { success: false, error: error.message || String(error) };
+    return { success: false, error: errorMsg };
   }
 }

@@ -4,10 +4,11 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import Link from "next/link";
+import { Profile, Education, WorkExperience } from "@/types";
 
 // Helper to calculate completeness percentage and missing fields list
 // Matches actions/profile.ts server-side validation logic
-function calculateCompleteness(profile: any) {
+function calculateCompleteness(profile: Partial<Profile>) {
   const missingFields: string[] = [];
   let filledCount = 0;
 
@@ -19,7 +20,7 @@ function calculateCompleteness(profile: any) {
   if (
     profile.years_experience !== null &&
     profile.years_experience !== undefined &&
-    profile.years_experience !== ""
+    String(profile.years_experience) !== ""
   ) {
     filledCount++;
   } else {
@@ -30,7 +31,7 @@ function calculateCompleteness(profile: any) {
   if (
     profile.work_experience &&
     profile.work_experience.length > 0 &&
-    profile.work_experience.some((r: any) => r.company && r.jobTitle)
+    profile.work_experience.some((r: WorkExperience) => r.company && r.jobTitle)
   ) {
     filledCount++;
   } else {
@@ -38,7 +39,7 @@ function calculateCompleteness(profile: any) {
   }
   
   if (profile.education && profile.education.length > 0) {
-    const hasEdu = profile.education.some((e: any) => e.degree || e.field || e.institution);
+    const hasEdu = profile.education.some((e: Education) => e.degree || e.field || e.institution);
     if (hasEdu) filledCount++; else missingFields.push("EDUCATION");
   } else {
     missingFields.push("EDUCATION");
@@ -136,25 +137,25 @@ export default async function DashboardPage() {
   const totalJobsFound = jobs ? jobs.length : 0;
   let avgMatchRate = 0;
   if (totalJobsFound > 0 && jobs) {
-    const sum = jobs.reduce((acc: number, j: any) => acc + (j.match_score || 0), 0);
+    const sum = jobs.reduce((acc: number, j: { match_score?: number | null }) => acc + (j.match_score || 0), 0);
     avgMatchRate = Math.round(sum / totalJobsFound);
   }
 
   const companiesResearchedCount = jobs
-    ? jobs.filter((j: any) => j.company_research !== null).length
+    ? jobs.filter((j: { company_research?: unknown }) => j.company_research !== null).length
     : 0;
 
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   const jobsThisWeekCount = jobs
-    ? jobs.filter((j: any) => new Date(j.found_at || j.created_at) >= oneWeekAgo).length
+    ? jobs.filter((j: { found_at?: string | null; created_at?: string | null }) => new Date(j.found_at || j.created_at || "") >= oneWeekAgo).length
     : 0;
 
   // Merge, sort and format recent activities
   const activities: { title: string; time: string; desc: string; dotColor: string; timestamp: Date }[] = [];
 
   if (recentRuns) {
-    recentRuns.forEach((run: any) => {
+    recentRuns.forEach((run: { job_title_searched?: string | null; completed_at?: string | null; started_at?: string | null; jobs_found?: number | null; status?: string | null }) => {
       // Exclude research runs to avoid double-counting in timeline since we list them via researchedJobs
       if (run.job_title_searched?.startsWith("Research:")) {
         return;
@@ -173,7 +174,7 @@ export default async function DashboardPage() {
   }
 
   if (researchedJobs) {
-    researchedJobs.forEach((job: any) => {
+    researchedJobs.forEach((job: { company: string; found_at?: string | null; created_at?: string | null }) => {
       const timestampStr = job.found_at || job.created_at;
       if (timestampStr) {
         activities.push({

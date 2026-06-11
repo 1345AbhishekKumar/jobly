@@ -54,7 +54,7 @@ export async function POST() {
           education: profile.education,
         },
         polished: polishedContent,
-      }) as any
+      }) as React.ReactElement
     );
 
     // 4. Clean up any existing resume in storage (to avoid auto-renaming)
@@ -80,7 +80,7 @@ export async function POST() {
     const defaultKey = `${user.id}/resume.pdf`;
     try {
       await insforge.storage.from("resumes").remove(defaultKey);
-    } catch (err) {
+    } catch {
       // Ignore
     }
 
@@ -119,10 +119,11 @@ export async function POST() {
     revalidatePath("/profile");
     revalidatePath("/dashboard");
     return NextResponse.json({ success: true, url: uploadData.url });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to generate resume:", error);
+    const message = error instanceof Error ? error.message : "Failed to generate resume.";
     return NextResponse.json(
-      { success: false, message: error.message || "Failed to generate resume." },
+      { success: false, message },
       { status: 500 }
     );
   }

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { createInsforgeServer } from "@/lib/insforge-server";
 
 export async function GET() {

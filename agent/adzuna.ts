@@ -4,7 +4,7 @@ import { scoreJobAgainstProfile } from "./matcher";
 import { createPostHogServer } from "@/lib/posthog-server";
 
 async function logAgentMessage(
-  insforge: any,
+  insforge: Awaited<ReturnType<typeof createInsforgeServer>>,
   runId: string,
   userId: string,
   message: string,
@@ -175,11 +175,11 @@ export async function discoverJobs(
         };
 
         // Insert job record
-        const { data: savedJob, error: saveError } = await insforge
-          .database.from("jobs")
-          .insert([jobRecord])
-          .select()
-          .single();
+        const { error: saveError } = await insforge
+           .database.from("jobs")
+           .insert([jobRecord])
+           .select()
+           .single();
 
         if (saveError) {
           console.error("Failed to save job record:", saveError);

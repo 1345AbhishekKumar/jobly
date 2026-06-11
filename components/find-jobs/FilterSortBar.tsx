@@ -74,7 +74,7 @@ export function FilterSortBar({
         <div className="relative">
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as "score" | "newest" | "oldest")}
             className="appearance-none h-9 rounded-md border border-border bg-surface pl-3 pr-8 text-xs font-semibold text-text-primary focus:border-accent focus:outline-none focus-ring cursor-pointer"
           >
             <option value="score">Match Score</option>

@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createInsforgeServer } from "@/lib/insforge-server";
+import { Profile, Education, WorkExperience } from "@/types";
 
 // Helper to calculate completeness percentage and missing fields list
-function calculateCompleteness(profile: any) {
+function calculateCompleteness(profile: Partial<Profile>) {
   const missingFields: string[] = [];
   let filledCount = 0;
 
@@ -13,12 +14,20 @@ function calculateCompleteness(profile: any) {
   if (profile.location?.trim()) filledCount++; else missingFields.push("LOCATION");
   if (profile.current_title?.trim()) filledCount++; else missingFields.push("CURRENT_TITLE");
   if (profile.experience_level?.trim()) filledCount++; else missingFields.push("EXPERIENCE_LEVEL");
-  if (profile.years_experience !== null && profile.years_experience !== undefined && profile.years_experience !== "") filledCount++; else missingFields.push("YEARS_EXPERIENCE");
+  if (
+    profile.years_experience !== null &&
+    profile.years_experience !== undefined &&
+    String(profile.years_experience) !== ""
+  ) {
+    filledCount++;
+  } else {
+    missingFields.push("YEARS_EXPERIENCE");
+  }
   if (profile.skills && profile.skills.length > 0) filledCount++; else missingFields.push("SKILLS");
   if (profile.work_experience && profile.work_experience.length > 0) filledCount++; else missingFields.push("WORK_EXPERIENCE");
   
   if (profile.education && profile.education.length > 0) {
-    const hasEdu = profile.education.some((e: any) => e.degree || e.institution);
+    const hasEdu = profile.education.some((e: Education) => e.degree || e.institution);
     if (hasEdu) filledCount++; else missingFields.push("EDUCATION");
   } else {
     missingFields.push("EDUCATION");
@@ -43,8 +52,8 @@ export async function saveProfile(formData: {
   years_experience: number | null;
   skills: string[];
   industries: string[];
-  work_experience: any[];
-  education: any[];
+  work_experience: WorkExperience[];
+  education: Education[];
   job_titles_seeking: string[];
   remote_preference: string;
   preferred_locations: string[];
@@ -63,7 +72,7 @@ export async function saveProfile(formData: {
   }
 
   // Calculate completeness metrics
-  const { isComplete, completionPercentage } = calculateCompleteness(formData);
+  const { isComplete } = calculateCompleteness(formData);
 
   const profileData = {
     full_name: formData.full_name,
@@ -171,7 +180,7 @@ export async function uploadResume(formData: FormData) {
   const fileName = `${user.id}/${file.name}`;
   try {
     await insforge.storage.from("resumes").remove(fileName);
-  } catch (err) {
+  } catch {
     // Ignore error if it doesn't exist
   }
 
