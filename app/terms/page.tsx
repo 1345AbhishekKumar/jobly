@@ -4,8 +4,8 @@ import { TableOfContents } from "@/components/legal/TableOfContents";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms & Conditions | JobPilot",
-  description: "Read the terms, rules, and conditions for using the JobPilot platform.",
+  title: "Terms & Conditions | Jobly",
+  description: "Read the terms, rules, and conditions for using the Jobly platform.",
 };
 
 const sections = [
@@ -53,7 +53,7 @@ export default function TermsPage() {
               <div className="mt-6 pt-6 border-t border-border">
                 <span className="text-xs text-text-secondary block mb-2">Need help?</span>
                 <Link
-                  href="mailto:support@jobpilot.ai"
+                  href="mailto:support@jobly.ai"
                   className="text-xs font-semibold text-accent hover:text-accent-dark transition-colors"
                 >
                   Contact Support →
@@ -92,7 +92,7 @@ export default function TermsPage() {
                     1. Acceptance of Terms
                   </h2>
                   <p>
-                    By accessing or using the JobPilot platform, web application, and associated services (collectively, the "Services"), you agree to be bound by these Terms & Conditions ("Terms") and our Privacy Policy. If you do not agree to all of these Terms, you are prohibited from using the Services.
+                    By accessing or using the Jobly platform, web application, and associated services (collectively, the &quot;Services&quot;), you agree to be bound by these Terms &amp; Conditions (&quot;Terms&quot;) and our Privacy Policy. If you do not agree to all of these Terms, you are prohibited from using the Services.
                   </p>
                   <p className="mt-3">
                     We reserve the right, at our sole discretion, to change, modify, add, or remove portions of these Terms at any time. We will notify you of any changes by posting the updated Terms on this page. Your continued use of the Services following the posting of changes constitutes your acceptance of the revised Terms.
@@ -105,7 +105,7 @@ export default function TermsPage() {
                     2. Account Registration
                   </h2>
                   <p>
-                    To access the core features of JobPilot, including the dashboard, profile builder, resume tailorer, and company research agent, you must sign in using a supported third-party identity provider (Google or GitHub OAuth).
+                    To access the core features of Jobly, including the dashboard, profile builder, resume tailorer, and company research agent, you must sign in using a supported third-party identity provider (Google or GitHub OAuth).
                   </p>
                   <ul className="list-disc pl-5 mt-3 space-y-2">
                     <li>You agree to provide accurate, current, and complete profile information during registration.</li>
@@ -121,7 +121,7 @@ export default function TermsPage() {
                     3. Description of Services
                   </h2>
                   <p>
-                    JobPilot provides users with AI-driven tools to assist in job searches and application preparation. Features include:
+                    Jobly provides users with AI-driven tools to assist in job searches and application preparation. Features include:
                   </p>
                   <ul className="list-disc pl-5 mt-3 space-y-2">
                     <li><strong>Adzuna Job Discovery:</strong> Querying public API listings to find job matches based on user-entered titles and locations.</li>
@@ -143,7 +143,7 @@ export default function TermsPage() {
                     You agree to use the Services only for lawful purposes and in accordance with these Terms. You agree not to:
                   </p>
                   <ul className="list-disc pl-5 mt-3 space-y-2">
-                    <li>Use the Services to scrape, harvest, or collect job listings, company data, or other users' profiles for commercial purposes outside personal job hunting.</li>
+                    <li>Use the Services to scrape, harvest, or collect job listings, company data, or other users&apos; profiles for commercial purposes outside personal job hunting.</li>
                     <li>Upload or submit resumes containing false credentials, deceptive work history, or fraudulent personal information.</li>
                     <li>Interfere with, disrupt, or attempt to gain unauthorized access to our servers, database clusters, or network integrations.</li>
                     <li>Impersonate any person or entity, or falsely state or otherwise misrepresent your affiliation with a person or entity.</li>
@@ -157,7 +157,7 @@ export default function TermsPage() {
                     5. AI Outputs & Limitations
                   </h2>
                   <p>
-                    JobPilot utilizes large language models (such as GPT-4o) and web crawlers to generate matches, resume text, and company research dossiers.
+                    Jobly utilizes large language models (such as GPT-4o) and web crawlers to generate matches, resume text, and company research dossiers.
                   </p>
                   <p className="mt-3 font-semibold text-text-primary">
                     Important Notice regarding AI Outputs:
@@ -167,7 +167,7 @@ export default function TermsPage() {
                       AI-generated insights, resume suggestions, and dossiers are provided for informational and helper purposes only. We do not guarantee the absolute accuracy, completeness, or truthfulness of any generated content.
                     </li>
                     <li>
-                      You are solely responsible for reviewing and editing all AI-generated resumes, cover letters, and email copy before submitting them to real employers. JobPilot is not liable for inaccuracies, formatting errors, or embellishments introduced by AI models.
+                      You are solely responsible for reviewing and editing all AI-generated resumes, cover letters, and email copy before submitting them to real employers. Jobly is not liable for inaccuracies, formatting errors, or embellishments introduced by AI models.
                     </li>
                     <li>
                       Job match scores are estimate approximations and do not guarantee an interview, hire, or specific hiring outcome.
@@ -181,7 +181,7 @@ export default function TermsPage() {
                     6. Intellectual Property
                   </h2>
                   <p>
-                    The JobPilot application interface, logo, code bases, designs, illustrations, database structures, and copywriting are the exclusive property of JobPilot and its licensors, protected by copyright, trademark, and other intellectual property laws.
+                    The Jobly application interface, logo, code bases, designs, illustrations, database structures, and copywriting are the exclusive property of Jobly and its licensors, protected by copyright, trademark, and other intellectual property laws.
                   </p>
                   <p className="mt-3">
                     We claim no ownership over the resume documents, text files, and profile details that you submit to the platform. You grant us a worldwide, non-exclusive, royalty-free license to store, parse, format, and share your submitted data with third-party sub-processors (like OpenAI and InsForge) strictly to the extent required to render the Services to you.
@@ -197,13 +197,13 @@ export default function TermsPage() {
                     Disclaimer of Warranties:
                   </p>
                   <p className="mt-1">
-                    THE SERVICES ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. WE EXPRESSLY DISCLAIM ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+                    THE SERVICES ARE PROVIDED ON AN &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; BASIS. WE EXPRESSLY DISCLAIM ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
                   </p>
                   <p className="mt-3 uppercase font-semibold text-xs text-text-primary tracking-wide">
                     Limitation of Damages:
                   </p>
                   <p className="mt-1">
-                    IN NO EVENT SHALL JOBPILOT, ITS DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES (INCLUDING DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA, OR OTHER INTANGIBLE LOSSES) ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OR INABILITY TO USE THE SERVICES.
+                    IN NO EVENT SHALL JOBLY, ITS DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES (INCLUDING DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA, OR OTHER INTANGIBLE LOSSES) ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OR INABILITY TO USE THE SERVICES.
                   </p>
                 </section>
 
@@ -242,8 +242,8 @@ export default function TermsPage() {
                     If you have any questions about these Terms & Conditions, please contact us at:
                   </p>
                   <div className="mt-4 p-4 bg-surface-secondary border border-border rounded-xl">
-                    <p className="font-semibold text-text-primary">JobPilot Legal Department</p>
-                    <p className="mt-1">Email: <Link href="mailto:legal@jobpilot.ai" className="text-accent hover:underline">legal@jobpilot.ai</Link></p>
+                    <p className="font-semibold text-text-primary">Jobly Legal Department</p>
+                    <p className="mt-1">Email: <Link href="mailto:legal@jobly.ai" className="text-accent hover:underline">legal@jobly.ai</Link></p>
                     <p>Address: 100 Innovation Way, Suite 400, San Francisco, CA 94107</p>
                   </div>
                 </section>

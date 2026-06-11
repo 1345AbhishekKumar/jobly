@@ -11,7 +11,7 @@ export function Features() {
   const features1 = [
     {
       title: "Interactive Company Intelligence Dossier",
-      description: "No more digging through stale Crunchbase pages. JobPilot reads the company's engineering blog, maps their active tech stack, and summarizes their roadmap. Know what the team is shipping before you talk to the recruiter.",
+      description: "No more digging through stale Crunchbase pages. Jobly reads the company's engineering blog, maps their active tech stack, and summarizes their roadmap. Know what the team is shipping before you talk to the recruiter.",
     },
     {
       title: "Reverse-Engineered Match Analysis",
@@ -26,7 +26,7 @@ export function Features() {
   const features2 = [
     {
       title: "Fine-Grained Stack Filtering",
-      description: "Filter out ghost jobs, agencies, and roles with misaligned tech stacks. Set rules like 'Only Rust or Go' or 'No third-party recruiters' and let JobPilot filter the noise out of your feed.",
+      description: "Filter out ghost jobs, agencies, and roles with misaligned tech stacks. Set rules like 'Only Rust or Go' or 'No third-party recruiters' and let Jobly filter the noise out of your feed.",
     },
     {
       title: "Context-Aware Resume Tailoring",

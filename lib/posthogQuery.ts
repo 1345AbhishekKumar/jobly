@@ -17,6 +17,10 @@ export interface DashboardChartsData {
   companyResearchData: ChartDataPoint[];
 }
 
+export interface PostHogQueryResult {
+  results?: unknown[][];
+}
+
 /**
  * Fetch dashboard charts data.
  * Tries querying PostHog events via HogQL first if credentials are set,
@@ -87,7 +91,7 @@ async function queryPostHogHogQL(
   projectId: string,
   personalKey: string,
   queryStr: string
-): Promise<any> {
+): Promise<PostHogQueryResult> {
   const url = `${host.replace(/\/$/, "")}/api/projects/${projectId}/query/`;
   const response = await fetch(url, {
     method: "POST",
@@ -108,21 +112,21 @@ async function queryPostHogHogQL(
     throw new Error(`PostHog Query API error (${response.status}): ${errorText}`);
   }
 
-  return response.json();
+  return response.json() as Promise<PostHogQueryResult>;
 }
 
 /**
  * Process raw PostHog results into standardized formats
  */
 function processPostHogResults(
-  jobsFoundRaw: any,
-  matchScoreRaw: any,
-  companyResearchRaw: any
+  jobsFoundRaw: PostHogQueryResult,
+  matchScoreRaw: PostHogQueryResult,
+  companyResearchRaw: PostHogQueryResult
 ): DashboardChartsData {
   // --- 1. Jobs Found Over Time (last 30 days) ---
   const jobsFoundMap = new Map<string, number>();
   if (jobsFoundRaw && Array.isArray(jobsFoundRaw.results)) {
-    jobsFoundRaw.results.forEach((row: any) => {
+    jobsFoundRaw.results.forEach((row) => {
       if (Array.isArray(row) && row.length >= 2) {
         const dayStr = String(row[0]).split("T")[0]; // YYYY-MM-DD
         const count = Number(row[1]) || 0;
@@ -153,7 +157,7 @@ function processPostHogResults(
   };
 
   if (matchScoreRaw && Array.isArray(matchScoreRaw.results)) {
-    matchScoreRaw.results.forEach((row: any) => {
+    matchScoreRaw.results.forEach((row) => {
       if (Array.isArray(row) && row.length >= 2) {
         const score = Number(row[0]) || 0;
         const count = Number(row[1]) || 0;
@@ -177,7 +181,7 @@ function processPostHogResults(
   // --- 3. Company Research Activity (last 7 days) ---
   const researchMap = new Map<string, number>();
   if (companyResearchRaw && Array.isArray(companyResearchRaw.results)) {
-    companyResearchRaw.results.forEach((row: any) => {
+    companyResearchRaw.results.forEach((row) => {
       if (Array.isArray(row) && row.length >= 2) {
         const dayStr = String(row[0]).split("T")[0]; // YYYY-MM-DD
         const count = Number(row[1]) || 0;

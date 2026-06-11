@@ -1,12 +1,12 @@
-# JobPilot - AI-Powered Job Hunting Assistant
+# Jobly - AI-Powered Job Hunting Assistant
 
-JobPilot is a full stack AI-powered job hunting assistant designed to streamline and automate the most tedious parts of the job search process. The user sets up their profile once, uploads their resume, and the agent automatically discovers relevant jobs, scores them against the user's profile, and researches companies to provide a comprehensive dossier before the user even applies.
+Jobly is a full stack AI-powered job hunting assistant designed to streamline and automate the most tedious parts of the job search process. The user sets up their profile once, uploads their resume, and the agent automatically discovers relevant jobs, scores them against the user's profile, and researches companies to provide a comprehensive dossier before the user even applies.
 
 ## The Problem It Solves
 
 Job hunting is one of the most repetitive and time-consuming tasks a developer faces. Reading dozens of job descriptions, deciding if a role fits, researching each company from scratch — all of this before even clicking apply.
 
-JobPilot eliminates all of that preparation work. The agent finds the jobs, scores them intelligently against the user's actual skills, and researches each company so the user arrives at every application fully informed.
+Jobly eliminates all of that preparation work. The agent finds the jobs, scores them intelligently against the user's actual skills, and researches each company so the user arrives at every application fully informed.
 
 ## Core Features
 

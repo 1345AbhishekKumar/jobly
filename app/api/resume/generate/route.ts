@@ -4,6 +4,7 @@ import { createInsforgeServer } from "@/lib/insforge-server";
 import { generateResumeContent } from "@/lib/nvidia";
 import { ResumePDFTemplate } from "@/components/profile/ResumePDFTemplate";
 import { renderToBuffer } from "@react-pdf/renderer";
+import type { DocumentProps } from "@react-pdf/renderer";
 import { revalidatePath } from "next/cache";
 
 export async function POST() {
@@ -54,7 +55,7 @@ export async function POST() {
           education: profile.education,
         },
         polished: polishedContent,
-      }) as any
+      }) as unknown as React.ReactElement<DocumentProps>
     );
 
     // 4. Clean up any existing resume in storage (to avoid auto-renaming)

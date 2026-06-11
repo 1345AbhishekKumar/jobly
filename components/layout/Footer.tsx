@@ -9,13 +9,13 @@ export function Footer() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo.png"
-            alt="JobPilot Logo"
+            alt="Jobly Logo"
             width={32}
             height={32}
             className="object-cover rounded-[8px]"
           />
           <span className="text-[16px] font-bold leading-6 text-text-darkest">
-            JobPilot
+            Jobly
           </span>
         </Link>
 

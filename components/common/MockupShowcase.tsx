@@ -4,7 +4,7 @@ import React from "react";
 interface MockupShowcaseProps {
   src: string;
   alt: string;
-  url?: string;             // Mock browser URL (defaults to "jobpilot.ai/dashboard")
+  url?: string;             // Mock browser URL (defaults to "jobly.ai/dashboard")
   aspectRatio?: string;     // Wrapper aspect ratio (defaults to "aspect-[1024/576]")
   className?: string;       // Custom classes for outer container
   overlay?: React.ReactNode; // Optional overlay content
@@ -14,7 +14,7 @@ interface MockupShowcaseProps {
 export function MockupShowcase({
   src,
   alt,
-  url = "jobpilot.ai/dashboard",
+  url = "jobly.ai/dashboard",
   aspectRatio = "aspect-[1024/576]",
   className = "",
   overlay,

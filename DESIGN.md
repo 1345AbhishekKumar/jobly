@@ -1,5 +1,5 @@
 ---
-name: JobPilot
+name: Jobly
 description: AI-powered job hunting assistant visual style guide
 colors:
   background: "#f6f7fb"
@@ -74,13 +74,13 @@ components:
     padding: "8px 12px"
 ---
 
-# Design System: JobPilot
+# Design System: Jobly
 
 ## 1. Overview
 
 **Creative North Star: "The Professional Navigator"**
 
-JobPilot's interface is designed to evoke absolute confidence, intelligence, and seamless productivity. Operating as an automated tech assistant, the visual layout guides the job seeker through complex data (match scores, company research, resume elements) with clear layouts and visual signals. The interface balances high-performance utility with premium, inviting aesthetics.
+Jobly's interface is designed to evoke absolute confidence, intelligence, and seamless productivity. Operating as an automated tech assistant, the visual layout guides the job seeker through complex data (match scores, company research, resume elements) with clear layouts and visual signals. The interface balances high-performance utility with premium, inviting aesthetics.
 
 The visual direction rejects generic SaaS clutter, excessive gradients on containers, and heavy overlays. It opts instead for a highly structured, clean layout utilizing plenty of white space and a crisp high-contrast palette.
 
@@ -91,7 +91,7 @@ The visual direction rejects generic SaaS clutter, excessive gradients on contai
 
 ## 2. Colors
 
-JobPilot uses a Clean and High-Contrast scheme to keep information readable.
+Jobly uses a Clean and High-Contrast scheme to keep information readable.
 
 ### Primary
 - **Vibrant Amethyst** (#7c5cfc): The core brand accent color. Used for primary buttons, active states, progress indicators, and focus outlines.

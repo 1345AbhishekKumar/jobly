@@ -88,14 +88,14 @@ function LoginForm() {
         <Link href="/" className="flex items-center gap-2 mb-6">
           <Image
             src="/logo.png"
-            alt="JobPilot Logo"
+            alt="Jobly Logo"
             width={40}
             height={40}
             className="object-cover rounded-[10px]"
             priority
           />
           <span className="text-2xl font-bold leading-7 text-text-darkest font-display">
-            JobPilot
+            Jobly
           </span>
         </Link>
         <h2 className="text-3xl font-semibold text-text-primary tracking-tight font-display">

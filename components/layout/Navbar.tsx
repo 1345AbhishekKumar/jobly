@@ -14,14 +14,14 @@ export async function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo.png"
-            alt="JobPilot Logo"
+            alt="Jobly Logo"
             width={36}
             height={36}
             className="object-cover rounded-[10px]"
             priority
           />
           <span className="text-[19px] font-bold leading-7 text-text-darkest font-display">
-            JobPilot
+            Jobly
           </span>
         </Link>
 

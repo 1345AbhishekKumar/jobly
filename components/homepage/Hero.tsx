@@ -19,7 +19,7 @@ export function Hero() {
 
         {/* Subtitle */}
         <p className="mx-auto max-w-2xl text-base sm:text-lg font-medium text-text-secondary mb-8 leading-relaxed animate-hero-fade delay-100">
-          JobPilot parses your engineering profile, extracts company dossier insights, and
+          Jobly parses your engineering profile, extracts company dossier insights, and
           scores matches based on hard tech-stack alignment. No wrapper spam. Just pure leverage.
         </p>
 
@@ -52,7 +52,7 @@ export function Hero() {
             </div>
             {/* Address Bar */}
             <div className="flex-1 max-w-sm mx-auto flex items-center justify-center h-6 rounded bg-surface border border-border text-[10px] text-text-muted font-mono">
-              jobpilot.ai/dashboard
+              jobly.ai/dashboard
             </div>
           </div>
 
@@ -60,7 +60,7 @@ export function Hero() {
           <div className="w-full overflow-hidden bg-background">
             <Image
               src="/images/dashboard-demo.png"
-              alt="JobPilot Dashboard Preview"
+              alt="Jobly Dashboard Preview"
               width={1024}
               height={576}
               className="w-full h-auto object-cover object-top"

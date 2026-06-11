@@ -96,7 +96,7 @@ export function JobHeader({
           </div>
         </div>
         <p className="text-xs text-text-muted">
-          Analyzed by JobPilot Matching Engine
+          Analyzed by Jobly Matching Engine
         </p>
       </div>
     </div>

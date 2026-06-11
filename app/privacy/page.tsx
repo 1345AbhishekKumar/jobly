@@ -4,8 +4,8 @@ import { TableOfContents } from "@/components/legal/TableOfContents";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Privacy Policy | JobPilot",
-  description: "Learn how JobPilot collects, uses, and safeguards your personal data.",
+  title: "Privacy Policy | Jobly",
+  description: "Learn how Jobly collects, uses, and safeguards your personal data.",
 };
 
 const sections = [
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
               <div className="mt-6 pt-6 border-t border-border">
                 <span className="text-xs text-text-secondary block mb-2">Need help?</span>
                 <Link
-                  href="mailto:support@jobpilot.ai"
+                  href="mailto:support@jobly.ai"
                   className="text-xs font-semibold text-accent hover:text-accent-dark transition-colors"
                 >
                   Contact Support →
@@ -90,10 +90,10 @@ export default function PrivacyPage() {
                     1. Introduction
                   </h2>
                   <p>
-                    Welcome to JobPilot ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you use our AI-powered job hunting assistant web application, hosted at our domain.
+                    Welcome to Jobly (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We are committed to protecting your personal information and your right to privacy. This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you use our AI-powered job hunting assistant web application, hosted at our domain.
                   </p>
                   <p className="mt-3">
-                    By accessing or using JobPilot, you agree to the collection and use of information in accordance with this policy. If you do not agree with any terms in this Privacy Policy, please discontinue use of our service immediately.
+                    By accessing or using Jobly, you agree to the collection and use of information in accordance with this policy. If you do not agree with any terms in this Privacy Policy, please discontinue use of our service immediately.
                   </p>
                 </section>
 
@@ -212,7 +212,7 @@ export default function PrivacyPage() {
                     We use essential cookies and tokens to manage your sign-in session and keep you logged in. We also load analytics tracking scripts (PostHog) to understand user flows, click events, and application usage patterns. This helps us optimize performance and build features that solve real job-hunting pain points.
                   </p>
                   <p className="mt-3">
-                    You can manage cookie settings in your web browser. However, disabling all cookies may prevent parts of the JobPilot application from functioning correctly.
+                    You can manage cookie settings in your web browser. However, disabling all cookies may prevent parts of the Jobly application from functioning correctly.
                   </p>
                 </section>
 
@@ -225,8 +225,8 @@ export default function PrivacyPage() {
                     If you have questions, comments, or concerns about this Privacy Policy or our data practices, please contact us at:
                   </p>
                   <div className="mt-4 p-4 bg-surface-secondary border border-border rounded-xl">
-                    <p className="font-semibold text-text-primary">JobPilot Security & Privacy Team</p>
-                    <p className="mt-1">Email: <Link href="mailto:privacy@jobpilot.ai" className="text-accent hover:underline">privacy@jobpilot.ai</Link></p>
+                    <p className="font-semibold text-text-primary">Jobly Security & Privacy Team</p>
+                    <p className="mt-1">Email: <Link href="mailto:privacy@jobly.ai" className="text-accent hover:underline">privacy@jobly.ai</Link></p>
                     <p>Address: 100 Innovation Way, Suite 400, San Francisco, CA 94107</p>
                   </div>
                 </section>

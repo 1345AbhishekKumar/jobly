@@ -12,13 +12,10 @@ interface TableOfContentsProps {
 }
 
 export function TableOfContents({ sections }: TableOfContentsProps) {
-  const [activeId, setActiveId] = useState<string>("");
+  const [activeId, setActiveId] = useState<string>(() => sections[0]?.id || "");
 
   useEffect(() => {
     if (sections.length === 0) return;
-
-    // Set initial active section
-    setActiveId(sections[0].id);
 
     const callback = (entries: IntersectionObserverEntry[]) => {
       // Find entries that are intersecting

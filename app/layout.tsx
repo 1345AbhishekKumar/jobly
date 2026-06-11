@@ -16,8 +16,8 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "JobPilot | AI-Powered Job Hunting Assistant",
-  description: "Stop applying blind. JobPilot finds the jobs, researches the companies, and gives you everything you need to stand out.",
+  title: "Jobly | AI-Powered Job Hunting Assistant",
+  description: "Stop applying blind. Jobly finds the jobs, researches the companies, and gives you everything you need to stand out.",
 };
 
 export default function RootLayout({

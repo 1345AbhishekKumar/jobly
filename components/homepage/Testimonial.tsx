@@ -14,7 +14,7 @@ export function Testimonial() {
           {/* Quote */}
           <blockquote className="mx-auto max-w-3xl text-xl sm:text-2xl font-semibold text-text-primary leading-relaxed mb-8">
             &ldquo;I used to waste hours tweaking bullet points and tracking applications
-            in spreadsheets. JobPilot did the company mapping in 15 seconds, helping me
+            in spreadsheets. Jobly did the company mapping in 15 seconds, helping me
             customize my approach. Had 3 tech-lead offers in 4 weeks. It feels like having
             an agent in your corner.&rdquo;
           </blockquote>
