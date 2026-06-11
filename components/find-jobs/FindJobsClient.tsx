@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { INITIAL_JOBS } from "./mockJobs";
+import { useRouter } from "next/navigation";
 import { SearchForm } from "./SearchForm";
 import { FilterSortBar } from "./FilterSortBar";
 import { JobsTable } from "./JobsTable";
@@ -9,15 +9,23 @@ import { Pagination } from "./Pagination";
 
 const ITEMS_PER_PAGE = 6;
 
-export function FindJobsClient() {
+interface FindJobsClientProps {
+  initialJobs: any[];
+}
+
+export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
+  const router = useRouter();
+
   // Form search criteria
   const [jobTitle, setJobTitle] = useState("");
   const [location, setLocation] = useState("");
 
-  // Search/loading states
+  // Search/loading/error states
   const [isSearching, setIsSearching] = useState(false);
-  const [showSuccessBanner, setShowSuccessBanner] = useState(true);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [latestRunResult, setLatestRunResult] = useState<{ total: number; strong: number } | null>(null);
 
   // Filters & Sorting state
   const [textFilter, setTextFilter] = useState("");
@@ -27,24 +35,72 @@ export function FindJobsClient() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Map database jobs to UI Jobs format
+  const dbJobs = useMemo(() => {
+    return initialJobs.map((dbJob) => ({
+      id: dbJob.id,
+      company: dbJob.company,
+      role: dbJob.title,
+      matchScore: dbJob.match_score,
+      salary: dbJob.salary || "N/A",
+      source: dbJob.source === "search" ? ("LinkedIn" as const) : ("URL" as const),
+      dateFound: dbJob.found_at || dbJob.created_at || new Date().toISOString(),
+    }));
+  }, [initialJobs]);
+
   // Handle Search Submission
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!jobTitle.trim()) return;
+
     setIsSearching(true);
-    setTimeout(() => {
-      setIsSearching(false);
+    setSearchError(null);
+    setLatestRunResult(null);
+
+    try {
+      const res = await fetch("/api/agent/find", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: jobTitle.trim(),
+          location: location.trim(),
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "Failed to discover jobs.");
+      }
+
+      setLatestRunResult({
+        total: result.data.jobsFoundCount || 0,
+        strong: result.data.strongJobsCount || 0,
+      });
+
       setHasSearched(true);
       setShowSuccessBanner(true);
       setCurrentPage(1);
-    }, 1200);
+
+      // Force Next.js to revalidate/refresh server page data
+      router.refresh();
+    } catch (err: any) {
+      console.error("[FindJobsClient] Search failed:", err);
+      setSearchError(err.message || "An unexpected error occurred during search.");
+      setShowSuccessBanner(false);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
-  // Reset simulated search
+  // Reset search form and state
   const handleResetSearch = () => {
     setJobTitle("");
     setLocation("");
     setHasSearched(false);
     setShowSuccessBanner(false);
+    setSearchError(null);
+    setLatestRunResult(null);
     setTextFilter("");
     setMatchFilter("all");
     setSortBy("score");
@@ -53,29 +109,7 @@ export function FindJobsClient() {
 
   // Filter & Sort Jobs list
   const processedJobs = useMemo(() => {
-    let result = [...INITIAL_JOBS];
-
-    // If a search was run, simulate filtering by search inputs
-    if (hasSearched) {
-      if (jobTitle.trim()) {
-        const titleQuery = jobTitle.toLowerCase();
-        result = result.filter(
-          (job) =>
-            job.role.toLowerCase().includes(titleQuery) ||
-            job.company.toLowerCase().includes(titleQuery)
-        );
-      }
-      if (location.trim()) {
-        const locQuery = location.toLowerCase();
-        // Since mock data has locations implied, we filter some items to simulate real search logic
-        if (locQuery.includes("remote")) {
-          // Keep a subset of jobs representing remote jobs
-          result = result.filter((_, idx) => idx % 2 === 0);
-        } else {
-          result = result.filter((_, idx) => idx % 3 === 0);
-        }
-      }
-    }
+    let result = [...dbJobs];
 
     // Filter by company/role text search input
     if (textFilter.trim()) {
@@ -106,7 +140,7 @@ export function FindJobsClient() {
     });
 
     return result;
-  }, [hasSearched, jobTitle, location, textFilter, matchFilter, sortBy]);
+  }, [dbJobs, textFilter, matchFilter, sortBy]);
 
   // Paginated jobs
   const paginatedJobs = useMemo(() => {
@@ -128,8 +162,8 @@ export function FindJobsClient() {
 
   // Derive counts for banner
   const strongMatchesCount = useMemo(() => {
-    return processedJobs.filter((j) => j.matchScore >= 70).length;
-  }, [processedJobs]);
+    return dbJobs.filter((j) => j.matchScore >= 70).length;
+  }, [dbJobs]);
 
   return (
     <div className="space-y-6">
@@ -145,9 +179,19 @@ export function FindJobsClient() {
         onReset={handleResetSearch}
         showSuccessBanner={showSuccessBanner}
         setShowSuccessBanner={setShowSuccessBanner}
-        totalFound={processedJobs.length}
-        strongFound={strongMatchesCount}
+        totalFound={latestRunResult ? latestRunResult.total : dbJobs.length}
+        strongFound={latestRunResult ? latestRunResult.strong : strongMatchesCount}
       />
+
+      {/* Error Banner */}
+      {searchError && (
+        <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm font-medium text-destructive animate-hero-fade">
+          <p className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{searchError}</span>
+          </p>
+        </div>
+      )}
 
       {/* Job List Section */}
       <div className="space-y-4">

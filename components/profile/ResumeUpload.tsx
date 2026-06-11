@@ -270,7 +270,7 @@ export function ResumeUpload({
               </div>
             </div>
             <a
-              href="/api/resume/download"
+              href={`/api/resume/download?t=${resumeUrl ? encodeURIComponent(resumeUrl) : Date.now()}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs font-bold underline hover:text-success-darker flex-shrink-0 ml-2"

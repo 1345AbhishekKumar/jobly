@@ -4,6 +4,7 @@ import { createInsforgeServer } from "@/lib/insforge-server";
 import { generateResumeContent } from "@/lib/nvidia";
 import { ResumePDFTemplate } from "@/components/profile/ResumePDFTemplate";
 import { renderToBuffer } from "@react-pdf/renderer";
+import { revalidatePath } from "next/cache";
 
 export async function POST() {
   const insforge = await createInsforgeServer();
@@ -115,6 +116,8 @@ export async function POST() {
       );
     }
 
+    revalidatePath("/profile");
+    revalidatePath("/dashboard");
     return NextResponse.json({ success: true, url: uploadData.url });
   } catch (error: any) {
     console.error("Failed to generate resume:", error);

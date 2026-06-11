@@ -12,6 +12,17 @@ export default async function FindJobsPage() {
     redirect("/login?redirectTo=/find-jobs");
   }
 
+  // Fetch real database jobs for this user
+  const { data: jobs, error: jobsError } = await insforge.database
+    .from("jobs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("found_at", { ascending: false });
+
+  if (jobsError) {
+    console.error("[FindJobsPage] Failed to fetch jobs:", jobsError);
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
@@ -26,8 +37,8 @@ export default async function FindJobsPage() {
           </p>
         </div>
 
-        {/* Find Jobs Client (Interactive UI with Mock Data) */}
-        <FindJobsClient />
+        {/* Find Jobs Client (Interactive UI connected to DB) */}
+        <FindJobsClient initialJobs={jobs || []} />
       </main>
 
       <Footer />

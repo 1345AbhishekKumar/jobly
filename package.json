@@ -17,6 +17,7 @@
     "pdf-parse": "^2.4.5",
     "pg": "^8.21.0",
     "posthog-js": "^1.384.3",
+    "posthog-node": "^5.36.15",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
