@@ -1,17 +1,17 @@
-# Memory — Filter, Sort, and Pagination (Feature 11)
+# Memory — Job Details Page — Full UI (Feature 12)
 
 Last updated: June 11, 2026
 
 ## What was built
 
-- **Feature 10 (Adzuna Job Discovery)**: Created [adzuna.ts](file:///d:/MyProjects/ongoing_Projects/jobly/lib/adzuna.ts) (Adzuna client), [matcher.ts](file:///d:/MyProjects/ongoing_Projects/jobly/agent/matcher.ts) (NVIDIA GPT compatibility matcher using `openai/gpt-oss-120b`), [adzuna.ts](file:///d:/MyProjects/ongoing_Projects/jobly/agent/adzuna.ts) (search agent orchestrator), and [route.ts](file:///d:/MyProjects/ongoing_Projects/jobly/app/api/agent/find/route.ts) (discovery agent endpoint).
-- **Match score Constant**: Created [utils.ts](file:///d:/MyProjects/ongoing_Projects/jobly/lib/utils.ts) exporting `MATCH_THRESHOLD = 70`.
-- **UI Components Wiring**: Updated [FindJobsClient.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/FindJobsClient.tsx) to set pages to `20` items, import `MATCH_THRESHOLD` for filtering, and updated [JobsTable.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/JobsTable.tsx) to map score bar colors dynamically using the constant.
+- **Feature 12 (Job Details Page — Full UI)**: Created [JobDetailsClient.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/job-details/JobDetailsClient.tsx) (interactive client component) and the dynamic server page [page.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/app/find-jobs/[id]/page.tsx).
+- **InsForge Database Integration**: Scoped database queries to both `id` and the authenticated user's `user_id`. Wired all job description details (responsibilities, requirements, nice-to-haves, benefits), metadata fields, and AI insights (match reasoning, matched/missing skills).
+- **Company Research Dossier UI**: Supported both empty state (Research Company CTA) and full dossier view rendering all 9 parsed company fields.
 
 ## Decisions made
 
-- **Client-Side Filtering and Pagination**: Decided to perform sorting, filtering, and page navigation entirely in memory on the client side (`FindJobsClient.tsx`) utilizing `useMemo` on database pre-loaded jobs. This keeps the application feeling instantly responsive and avoids extra database queries.
-- **Match Threshold Centralization**: Centralized the matching score classification limit under a single `MATCH_THRESHOLD` constant in `lib/utils.ts`.
+- **Pre-implemented Dossier UI**: Built complete dossier rendering (Company Overview, Tech Stack, Culture, Strategic Importance, Your Edge, Gaps to Address, Smart Questions, Interview Prep, Sources) to avoid subsequent edits once Feature 13 is completed.
+- **Dynamic Routing Type Safety**: Awaited `params` promise natively to adhere to Next.js 16 requirements.
 
 ## Problems solved
 
@@ -19,12 +19,12 @@ Last updated: June 11, 2026
 
 ## Current state
 
-- Feature 10 and Feature 11 are 100% complete.
-- Next.js production build (`bun run build`) compiles successfully with 0 TypeScript/Turbopack errors.
+- Feature 12 is 100% complete.
+- Next.js production build (`bun run build`) compiles successfully.
 
 ## Next session starts with
 
-- **Feature 12 (Job Details Page — Full UI)**: Build the complete job details page UI (`app/find-jobs/[id]/page.tsx`), fetching real job information, match score, reasoning, required vs candidate skills from DB, and rendering an empty state for Company Research.
+- **Feature 13 (Company Research Agent)**: Implement the background crawler agent in `agent/research.ts` utilizing Stagehand and Browserbase, and build the backend API route `/api/agent/research` to populate the `company_research` dossier.
 
 ## Open questions
 
