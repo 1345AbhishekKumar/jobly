@@ -1,10 +1,8 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { openai } from "@/lib/nvidia";
 import { createPostHogServer } from "@/lib/posthog-server";
-import { chromium, Browser } from "playwright";
-
 import { logAgentMessage } from "./research/logger";
-import { scrapePageText, discoverSubPages, resolveHomepageUrl } from "./research/scraper";
+import { resolveHomepageUrl, scrapeCompanyDetails } from "./research/scraper";
 
 export interface CompanyResearchDossier {
   companyOverview: string;
@@ -114,84 +112,16 @@ export async function researchCompany(
       jobId
     );
 
-    let collectedResearch = "";
-
-    // 5. Scrape using Playwright Chromium with 20-second timeout
-    let browser: Browser | null = null;
-    try {
-      console.log("[Research Agent] Starting browser scraper task with timeout...");
-      await logAgentMessage(
-        insforge,
-        runId,
-        userId,
-        "Launching Chromium browser session (with 20s timeout)...",
-        "info",
-        jobId
-      );
-
-      const scrapePromise = (async () => {
-        browser = await chromium.launch({ 
-          headless: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
-        });
-        console.log("[Research Agent] Browser launched. Creating context...");
-        const context = await browser.newContext({
-          userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        });
-        const page = await context.newPage();
-        console.log("[Research Agent] New browser page created.");
-
-        const homepageText = await scrapePageText(page, resolvedUrl, 4000);
-        if (homepageText) {
-          collectedResearch += `--- HOMEPAGE (${resolvedUrl}) ---\n${homepageText}\n\n`;
-        }
-
-        const subPages = await discoverSubPages(page, resolvedUrl);
-        await logAgentMessage(
-          insforge,
-          runId,
-          userId,
-          `Discovered ${subPages.length} relevant sub-pages: ${subPages.join(", ")}`,
-          "info",
-          jobId
-        );
-
-        for (const subPage of subPages) {
-          const subPageText = await scrapePageText(page, subPage, 3000);
-          if (subPageText) {
-            collectedResearch += `--- SUB-PAGE (${subPage}) ---\n${subPageText}\n\n`;
-            resolvedSources.push(subPage);
-          }
-        }
-      })();
-
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Scraping phase timed out after 20 seconds")), 20000)
-      );
-
-      await Promise.race([scrapePromise, timeoutPromise]);
-      console.log("[Research Agent] Scraping completed successfully.");
-
-    } catch (browserErr: unknown) {
-      const browserErrMsg = browserErr instanceof Error ? browserErr.message : String(browserErr);
-      console.error("[Research Agent] Playwright scraping interrupted or failed:", browserErrMsg);
-      await logAgentMessage(
-        insforge,
-        runId,
-        userId,
-        `Browser scraping interrupted: ${browserErrMsg}. Proceeding with fallback AI synthesis.`,
-        "warning",
-        jobId
-      );
-    } finally {
-      if (browser) {
-        console.log("[Research Agent] Closing Playwright browser...");
-        await (browser as Browser).close().catch((err: unknown) => {
-          const errM = err instanceof Error ? err.message : String(err);
-          console.error("[Research Agent] Error closing browser:", errM);
-        });
+    // 5. Scrape using deep BrowserScraper module
+    const { collectedResearch, sources: scrapedSources } = await scrapeCompanyDetails(
+      resolvedUrl,
+      async (message, level) => {
+        await logAgentMessage(insforge, runId, userId, message, level, jobId);
       }
-    }
+    );
+
+    // Merge homepage and scraped subpages into resolvedSources
+    resolvedSources = scrapedSources;
 
     // 6. Synthesize Company Research Dossier using gpt-oss-120b
     console.log("[Research Agent] Initiating synthesis call to NVIDIA API...");

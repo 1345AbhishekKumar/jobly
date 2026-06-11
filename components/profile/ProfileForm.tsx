@@ -6,6 +6,7 @@ import { CompletionIndicator } from "./CompletionIndicator";
 import { ResumeUpload } from "./ResumeUpload";
 
 import { Profile, WorkExperience } from "@/types";
+import { calculateCompleteness } from "@/lib/profile-completeness";
 
 // Extracted subsections
 import { PersonalInfoSection } from "./form-sections/PersonalInfoSection";
@@ -85,50 +86,43 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [coverLetterTone, setCoverLetterTone] = useState(initialProfile?.cover_letter_tone || "formal");
   const [resumePdfUrl, setResumePdfUrl] = useState<string | null>(initialProfile?.resume_pdf_url || null);
 
-  // Profile completion calculation logic
-  const calculateCompletenessMetrics = () => {
-    const missingFields: string[] = [];
-    let filledCount = 0;
+  // Form parsing for completeness calculation and save payload
+  const parsedYears = yearsExperience.trim() ? parseInt(yearsExperience, 10) : null;
+  const parsedJobTitles = jobTitlesSeeking
+    .split(",")
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+  const parsedPreferredLocs = preferredLocations
+    .split(",")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
 
-    if (fullName.trim()) filledCount++; else missingFields.push("FULL_NAME");
-    if (phone.trim()) filledCount++; else missingFields.push("PHONE");
-    if (location.trim()) filledCount++; else missingFields.push("LOCATION");
-    if (currentTitle.trim()) filledCount++; else missingFields.push("CURRENT_TITLE");
-    if (experienceLevel.trim()) filledCount++; else missingFields.push("EXPERIENCE_LEVEL");
-    if (yearsExperience.trim()) filledCount++; else missingFields.push("YEARS_EXPERIENCE");
-    if (skills.length > 0) filledCount++; else missingFields.push("SKILLS");
-    if (workExperience.length > 0 && workExperience.some(role => role.company && role.jobTitle)) filledCount++; else missingFields.push("WORK_EXPERIENCE");
-    if (eduField.trim() || eduInstitution.trim()) filledCount++; else missingFields.push("EDUCATION");
-    if (jobTitlesSeeking.trim()) filledCount++; else missingFields.push("JOB_PREFERENCES");
+  const educationArray = [
+    {
+      degree: eduDegree,
+      field: eduField,
+      institution: eduInstitution,
+      year: eduYear,
+    },
+  ];
 
-    const percentage = Math.round((filledCount / 10) * 100);
-    return { percentage, missingFields };
-  };
-
-  const { percentage, missingFields } = calculateCompletenessMetrics();
+  // Profile completion calculation logic using unified helper
+  const { completionPercentage: percentage, missingFields } = calculateCompleteness({
+    full_name: fullName,
+    phone,
+    location,
+    current_title: currentTitle,
+    experience_level: experienceLevel,
+    years_experience: parsedYears,
+    skills,
+    work_experience: workExperience,
+    education: educationArray,
+    job_titles_seeking: parsedJobTitles,
+  });
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus(null);
-
-    const parsedYears = yearsExperience.trim() ? parseInt(yearsExperience, 10) : null;
-    const parsedJobTitles = jobTitlesSeeking
-      .split(",")
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
-    const parsedPreferredLocs = preferredLocations
-      .split(",")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
-
-    const educationArray = [
-      {
-        degree: eduDegree,
-        field: eduField,
-        institution: eduInstitution,
-        year: eduYear,
-      },
-    ];
 
     startTransition(async () => {
       try {

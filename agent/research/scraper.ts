@@ -1,4 +1,4 @@
-import { Page } from "playwright";
+import { Page, chromium, Browser } from "playwright";
 
 // Scrapes a given URL and returns cleaned text up to maxChars
 export async function scrapePageText(page: Page, url: string, maxChars = 4000): Promise<string> {
@@ -154,4 +154,81 @@ export async function resolveHomepageUrl(company: string, sourceUrl?: string, ex
   sources.push(homepage);
   console.log(`[URL Resolver] Fallback URL: ${homepage}`);
   return { resolvedUrl: homepage, sources };
+}
+
+// Deep module function consolidating Playwright lifecycle & scraping orchestration
+export async function scrapeCompanyDetails(
+  resolvedUrl: string,
+  logCallback?: (message: string, level: "info" | "success" | "warning" | "error") => Promise<void>
+): Promise<{ collectedResearch: string; sources: string[] }> {
+  let collectedResearch = "";
+  const sources: string[] = [resolvedUrl];
+  let browser: Browser | null = null;
+
+  try {
+    console.log("[Scraper] Starting browser scraper task with timeout...");
+    if (logCallback) {
+      await logCallback("Launching Chromium browser session (with 20s timeout)...", "info");
+    }
+
+    const scrapePromise = (async () => {
+      browser = await chromium.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+      });
+      console.log("[Scraper] Browser launched. Creating context...");
+      const context = await browser.newContext({
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      });
+      const page = await context.newPage();
+      console.log("[Scraper] New browser page created.");
+
+      const homepageText = await scrapePageText(page, resolvedUrl, 4000);
+      if (homepageText) {
+        collectedResearch += `--- HOMEPAGE (${resolvedUrl}) ---\n${homepageText}\n\n`;
+      }
+
+      const subPages = await discoverSubPages(page, resolvedUrl);
+      if (logCallback) {
+        await logCallback(
+          `Discovered ${subPages.length} relevant sub-pages: ${subPages.join(", ")}`,
+          "info"
+        );
+      }
+
+      for (const subPage of subPages) {
+        const subPageText = await scrapePageText(page, subPage, 3000);
+        if (subPageText) {
+          collectedResearch += `--- SUB-PAGE (${subPage}) ---\n${subPageText}\n\n`;
+          sources.push(subPage);
+        }
+      }
+    })();
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Scraping phase timed out after 20 seconds")), 20000)
+    );
+
+    await Promise.race([scrapePromise, timeoutPromise]);
+    console.log("[Scraper] Scraping completed successfully.");
+  } catch (browserErr: unknown) {
+    const browserErrMsg = browserErr instanceof Error ? browserErr.message : String(browserErr);
+    console.error("[Scraper] Playwright scraping interrupted or failed:", browserErrMsg);
+    if (logCallback) {
+      await logCallback(
+        `Browser scraping interrupted: ${browserErrMsg}. Proceeding with fallback AI synthesis.`,
+        "warning"
+      );
+    }
+  } finally {
+    if (browser) {
+      console.log("[Scraper] Closing Playwright browser...");
+      await (browser as Browser).close().catch((err: unknown) => {
+        const errM = err instanceof Error ? err.message : String(err);
+        console.error("[Scraper] Error closing browser:", errM);
+      });
+    }
+  }
+
+  return { collectedResearch, sources };
 }

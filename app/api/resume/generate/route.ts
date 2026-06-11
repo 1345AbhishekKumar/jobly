@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import React from "react";
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { generateResumeContent } from "@/lib/nvidia";
+import { cleanOldResume } from "@/lib/resume-storage";
 import { ResumePDFTemplate } from "@/components/profile/ResumePDFTemplate";
 import { renderToBuffer } from "@react-pdf/renderer";
 import type { DocumentProps } from "@react-pdf/renderer";
@@ -58,32 +59,10 @@ export async function POST() {
       }) as unknown as React.ReactElement<DocumentProps>
     );
 
-    // 4. Clean up any existing resume in storage (to avoid auto-renaming)
-    if (profile.resume_pdf_url) {
-      try {
-        const urlObj = new URL(profile.resume_pdf_url);
-        const objectsPrefix = "/objects/";
-        const objectsIndex = urlObj.pathname.indexOf(objectsPrefix);
-        if (objectsIndex !== -1) {
-          let encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
-          encodedKey = decodeURIComponent(encodedKey);
-          let oldKey = encodedKey;
-          if (encodedKey.startsWith("resumes/")) {
-            oldKey = encodedKey.substring("resumes/".length);
-          }
-          await insforge.storage.from("resumes").remove(oldKey);
-        }
-      } catch (err) {
-        console.warn("Failed to delete old resume from storage:", err);
-      }
-    }
-
     const defaultKey = `${user.id}/resume.pdf`;
-    try {
-      await insforge.storage.from("resumes").remove(defaultKey);
-    } catch {
-      // Ignore
-    }
+
+    // 4. Clean up any existing resume in storage (to avoid auto-renaming) using unified storage helper
+    await cleanOldResume(insforge, user.id, profile.resume_pdf_url);
 
     // 5. Upload the PDF buffer to InsForge storage
     const pdfBlob = new Blob([new Uint8Array(pdfBuffer)], { type: "application/pdf" });

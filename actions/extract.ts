@@ -3,6 +3,7 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { PDFParse } from "pdf-parse";
 import { extractResumeWithNvidiaAI, ExtractedProfile } from "@/lib/nvidia";
+import { parseStorageKeyFromUrl } from "@/lib/resume-storage";
 
 export interface ExtractionResult {
   success: boolean;
@@ -31,24 +32,8 @@ export async function extractProfileFromResume(): Promise<ExtractionResult> {
       return { success: false, message: "No resume found. Please upload a resume first." };
     }
 
-    // Parse the key
-    let key = `${user.id}/resume.pdf`; // fallback
-    try {
-      const urlObj = new URL(profile.resume_pdf_url);
-      const objectsPrefix = "/objects/";
-      const objectsIndex = urlObj.pathname.indexOf(objectsPrefix);
-      if (objectsIndex !== -1) {
-        let encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
-        encodedKey = decodeURIComponent(encodedKey);
-        if (encodedKey.startsWith("resumes/")) {
-          key = encodedKey.substring("resumes/".length);
-        } else {
-          key = encodedKey;
-        }
-      }
-    } catch (err) {
-      console.warn("Failed to parse resume storage URL:", err);
-    }
+    // Parse the key using unified storage helper
+    const key = parseStorageKeyFromUrl(profile.resume_pdf_url, user.id);
 
     // Download the PDF file using the actual key
     const { data: blob, error: downloadError } = await insforge.storage

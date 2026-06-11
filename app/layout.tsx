@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-import { PostHogProvider } from "./providers";
-import { PostHogPageView } from "./posthog-pageview";
+import { PostHogProvider, PostHogPageView } from "@/lib/posthog-client";
+
 
 const inter = Inter({
   variable: "--font-sans",
