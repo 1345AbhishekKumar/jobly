@@ -214,6 +214,7 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
           linkedin_url: linkedinUrl,
           portfolio_url: portfolioUrl,
           work_authorization: workAuthorization,
+          resume_pdf_url: resumePdfUrl,
         });
 
         if (result.success) {

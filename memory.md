@@ -1,36 +1,38 @@
-# Memory — Profile Page UI & Save Logic (Feature 05 & 06)
+# Memory — Find Jobs Page UI (Feature 9)
 
-Last updated: 2026-06-10T22:36:00+05:30
+Last updated: June 11, 2026
 
 ## What was built
 
-- **Profile Route**: Built protected Next.js App Router page at [app/profile/page.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/app/profile/page.tsx) that retrieves current user and profile data.
-- **Proxy Download Endpoint**: Created authenticated download proxy at [app/api/resume/download/route.ts](file:///d:/MyProjects/ongoing_Projects/jobly/app/api/resume/download/route.ts) to serve private files securely from storage.
-- **Server Actions**: Created profile action file at [actions/profile.ts](file:///d:/MyProjects/ongoing_Projects/jobly/actions/profile.ts) with `saveProfile` (updates DB, sets completeness metrics) and `uploadResume` (uploads PDF to private `resumes` bucket and saves URL).
-- **Aesthetic UI Components**:
-  - `CompletionIndicator.tsx` — circular progress ring & warning tags matching profile design specifications.
-  - `ResumeUpload.tsx` — drag-and-drop zone with cloud upload, PDF limits (5MB), and view link pointing to proxy endpoint.
-  - `ProfileForm.tsx` — interactive form handling personal & professional info, skills/industries tags, up to 3 work experience cards, education, and job preferences.
+- **Find Jobs Page Route**: Created [page.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/app/find-jobs/page.tsx) with InsForge session verification and redirection.
+- **Modular Component Architecture**: Implemented [FindJobsClient.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/FindJobsClient.tsx) as the parent state coordinator, delegating all UI rendering to 6 clean subcomponents (all files under 100 lines):
+  - [types.ts](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/types.ts): Defined shared type interfaces.
+  - [mockJobs.ts](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/mockJobs.ts): Set up 24 mock jobs matching reference visuals.
+  - [SearchForm.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/SearchForm.tsx): Handled Job Title / Location inputs, simulated search triggers, loading states, and the dismissible success matching banner.
+  - [FilterSortBar.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/FilterSortBar.tsx): Handled text searches, Match Strength tabs, and Sort dropdowns.
+  - [JobsTable.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/JobsTable.tsx): Rendered the main jobs grid featuring company logo squircles, nested roles, color-coded progress bars, and source badges matching `jobs-lists.png`.
+  - [Pagination.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/find-jobs/Pagination.tsx): Controlled the list counts and page indices.
 
 ## Decisions made
 
-- **Profile Completeness Metric**: Defined 10 core fields to compute profile completion (e.g. 70% complete matches the design when phone, location, and education are missing).
-- **Education Layout**: Nested education fields as a single-element array inside `education` jsonb column to preserve database schema compatibility.
-- **Secure File Retrievability**: Handled private bucket file downloads by proxying them through an authenticated route instead of direct cross-origin link access (which lacks the authorization header/token).
+- **Component Splitting**: Chose to divide the Client Board into modular component files to maintain strict separation of concerns, keeping the state coordinator under 130 lines and subcomponents small and highly readable.
+- **Reference Layout Fusing**: Integrated column properties to match the visual layout of `jobs-lists.png` by nesting the Job Role directly below the bold Company Name, conserving horizontal space while keeping the table clean and satisfying the build plan.
+- **Progress Bar Color Mapping**: Mapped progress bars by score strength (Green for `>=90%` strong matches, Blue for `80% - 89%` medium matches, and Orange/Yellow for `<80%` low matches).
+- **Source Badges**: Set `LinkedIn` badge styling to custom light-blue and `URL` badge to neutral gray/white.
 
 ## Problems solved
 
-- **401 Unauthorized Error on Resume Download**: Resolved `AUTH_INVALID_CREDENTIALS` error when viewing the resume PDF by serving files via the new Next.js proxy route `/api/resume/download`.
-- **Type Verification Failures**: Resolved TypeScript compilation errors in [test-signup-sdk.ts](file:///d:/MyProjects/ongoing_Projects/jobly/test-signup-sdk.ts) and [test-signup-existing.ts](file:///d:/MyProjects/ongoing_Projects/jobly/test-signup-existing.ts) where `InsForgeError` was incorrectly cast to `Record<string, unknown>`.
+- **TypeScript Buffer/Blob Error**: Resolved a compiler failure in `app/api/resume/generate/route.ts` where a Node `Buffer` was passed to the `Blob` constructor. Wrapping the buffer in `new Uint8Array(pdfBuffer)` and calling the 2-argument signature `.upload(defaultKey, pdfBlob)` on the InsForge storage client fixed the type mismatch and allowed clean compilation.
 
 ## Current state
 
-- **Profile Page Complete**: The profile UI, validation, database/storage save, and secure file viewing operations are fully implemented and ready.
+- Feature 9 (Find Jobs Page UI) is 100% complete.
+- Client-side mock search, filters, matching categories, sorting, and pagination are fully interactive.
+- Next.js production build (`bun run build`) compiles successfully without any TypeScript or build errors.
 
 ## Next session starts with
 
-- **Phase 2, Feature 07 (AI Profile Extraction)**: Implement the "Extract from Resume" button utilizing OpenRouter/GPT-4o to parse PDF text and populate the form fields automatically.
-- **Phase 2, Feature 08 (Resume PDF Generation)**: Implement "Generate Resume from Profile" using `@react-pdf/renderer` and OpenRouter/GPT-4o.
+- **Feature 10 (Adzuna Job Discovery)**: Wire the Find Jobs button to a real API endpoint (`POST /api/agent/find`). Set up the Adzuna API search parameters, implement GPT-based compatibility scoring, create `agent_runs` rows, and save discovered jobs to the database.
 
 ## Open questions
 

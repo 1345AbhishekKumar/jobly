@@ -138,17 +138,17 @@ Extract from Resume button — GPT-4o reads uploaded PDF and auto-fills profile 
 
 ### 08 Resume PDF Generation from Profile
 
-Generate a clean professional PDF resume from current profile data using GPT-4o.
+Generate a clean professional PDF resume from current profile data using GPT-.
 
 **Logic:**
 
 - POST /api/resume/generate
 - Reads current profile data from profiles table
-- GPT-4o generates professional resume content:
+- GPT generates professional resume content:
   - Professional summary paragraph
   - Polished work experience bullet points
   - Clean professional language throughout
-- @react-pdf/renderer renders GPT-4o output into clean single-page PDF using renderToBuffer()
+- @react-pdf/renderer renders GPT output into clean single-page PDF using renderToBuffer()
 - Buffer uploaded to InsForge Storage at resumes/{user_id}/resume.pdf with upsert: true
 - resume_pdf_url updated in profiles table
 
@@ -175,7 +175,6 @@ Build the complete Find Jobs page UI with mock data. No logic yet.
 ---
 
 ### 10 Adzuna Job Discovery
-
 Agent calls Adzuna API to find jobs matching user's search criteria, scores them against user profile, saves to DB.
 
 **Logic:*
@@ -187,7 +186,7 @@ Agent calls Adzuna API to find jobs matching user's search criteria, scores them
   - Detect country from location input — default to 'us'
 - For each job returned:
   - Extract title, company, location, salary, description snippet, redirect_url
-  - GPT-4o scores job against user profile:
+  - GPT- scores job against user profile:
     - matchScore — integer 0-100
     - matchReason — one paragraph explanation
     - matchedSkills — skills user has that job requires

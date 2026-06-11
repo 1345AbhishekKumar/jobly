@@ -53,6 +53,7 @@ export async function saveProfile(formData: {
   linkedin_url: string;
   portfolio_url: string;
   work_authorization: string;
+  resume_pdf_url?: string | null;
 }) {
   const insforge = await createInsforgeServer();
   const { data: { user } } = await insforge.auth.getCurrentUser();
@@ -83,6 +84,7 @@ export async function saveProfile(formData: {
     linkedin_url: formData.linkedin_url,
     portfolio_url: formData.portfolio_url,
     work_authorization: formData.work_authorization,
+    resume_pdf_url: formData.resume_pdf_url,
     is_complete: isComplete,
     updated_at: new Date().toISOString(),
   };
@@ -152,8 +154,12 @@ export async function uploadResume(formData: FormData) {
       const objectsPrefix = "/objects/";
       const objectsIndex = urlObj.pathname.indexOf(objectsPrefix);
       if (objectsIndex !== -1) {
-        const encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
-        const oldKey = decodeURIComponent(encodedKey);
+        let encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
+        encodedKey = decodeURIComponent(encodedKey);
+        let oldKey = encodedKey;
+        if (encodedKey.startsWith("resumes/")) {
+          oldKey = encodedKey.substring("resumes/".length);
+        }
         await insforge.storage.from("resumes").remove(oldKey);
       }
     } catch (err) {
@@ -178,14 +184,29 @@ export async function uploadResume(formData: FormData) {
     return { success: false, message: uploadError?.message || "Upload failed" };
   }
 
-  // Update profile with the new resume PDF URL
-  const { error: dbError } = await insforge.database
-    .from("profiles")
-    .update({
-      resume_pdf_url: uploadData.url,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", user.id);
+  // Update profile with the new resume PDF URL, or insert if it doesn't exist
+  let dbError;
+  if (profile) {
+    const { error } = await insforge.database
+      .from("profiles")
+      .update({
+        resume_pdf_url: uploadData.url,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+    dbError = error;
+  } else {
+    const { error } = await insforge.database
+      .from("profiles")
+      .insert([{
+        id: user.id,
+        email: user.email,
+        resume_pdf_url: uploadData.url,
+        is_complete: false,
+        updated_at: new Date().toISOString(),
+      }]);
+    dbError = error;
+  }
 
   if (dbError) {
     console.error("Failed to update profile resume URL:", dbError);

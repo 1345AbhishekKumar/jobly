@@ -92,7 +92,6 @@ Do not invent or fabricate details. Extract from the provided text. Make your be
       top_p: 1,
       max_tokens: 4096,
       stream: false,
-      reasoning_effort: "high" as any,
     });
 
     let content = completion.choices[0]?.message?.content?.trim() || "";
@@ -118,3 +117,102 @@ Do not invent or fabricate details. Extract from the provided text. Make your be
     throw error;
   }
 }
+
+export interface PolishedResumeContent {
+  professional_summary: string;
+  work_experience: Array<{
+    company: string;
+    jobTitle: string;
+    startDate: string;
+    endDate: string;
+    current: boolean;
+    bullets: string[];
+  }>;
+}
+
+export async function generateResumeContent(profile: {
+  full_name: string;
+  current_title?: string;
+  experience_level?: string;
+  years_experience?: number | null;
+  skills?: string[];
+  work_experience?: Array<{
+    company: string;
+    jobTitle: string;
+    startDate: string;
+    endDate: string;
+    current: boolean;
+    responsibilities: string;
+  }>;
+  education?: Array<{
+    degree: string;
+    field: string;
+    institution: string;
+    year: string;
+  }>;
+}): Promise<PolishedResumeContent> {
+  if (!nvidiaApiKey) {
+    throw new Error("NVIDIA_API_KEY is not configured in environment variables.");
+  }
+
+  const systemPrompt = `You are a professional resume writer. Your job is to rewrite and polish a candidate's profile into standard professional resume content, returning a single, valid JSON object matching the JSON schema below.
+
+Required Rules:
+1. Return ONLY the JSON object. Do not include any markdown wrappers (like \`\`\`json), explanation, or leading/trailing text.
+2. The JSON schema must strictly contain these fields:
+   - "professional_summary": string (A highly polished, engaging summary paragraph of 2-3 sentences. Do not use fluff; focus on skills, achievements, and years of experience.)
+   - "work_experience": array of objects representing the work experiences, matching the input list in order, each containing:
+     - "company": string (Keep exact same company name)
+     - "jobTitle": string (Keep exact same job title)
+     - "startDate": string (Keep exact same start date)
+     - "endDate": string (Keep exact same end date)
+     - "current": boolean (Keep exact same value)
+     - "bullets": array of strings (Generate exactly 3-4 professional, accomplishment-oriented bullet points based on the raw responsibilities provided. Each bullet point should start with a strong action verb and highlight quantitative results or professional impact. Keep each bullet point concise: maximum 15 words. This is critical to ensure the resume fits on a single page.)
+
+Do not invent or fabricate details not implied by the candidate's work history. Focus entirely on professional phrasing, correcting grammatical issues, and optimizing impact.`;
+
+  const userPrompt = `Candidate Profile details:
+Name: ${profile.full_name}
+Current Title: ${profile.current_title || "N/A"}
+Years of Experience: ${profile.years_experience || "N/A"}
+Skills: ${profile.skills?.join(", ") || "N/A"}
+Work Experience: ${JSON.stringify(profile.work_experience || [])}
+Education: ${JSON.stringify(profile.education || [])}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "openai/gpt-oss-120b",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.3,
+      top_p: 1,
+      max_tokens: 4096,
+      stream: false,
+    });
+
+    let content = completion.choices[0]?.message?.content?.trim() || "";
+
+    if (!content) {
+      throw new Error("NVIDIA API response did not contain content choices.");
+    }
+
+    // Clean up markdown wrappers if returned
+    if (content.startsWith("```json")) {
+      content = content.substring(7);
+    } else if (content.startsWith("```")) {
+      content = content.substring(3);
+    }
+    if (content.endsWith("```")) {
+      content = content.substring(0, content.length - 3);
+    }
+    content = content.trim();
+
+    return JSON.parse(content) as PolishedResumeContent;
+  } catch (error) {
+    console.error("Failed to generate resume content via NVIDIA API:", error);
+    throw error;
+  }
+}
+

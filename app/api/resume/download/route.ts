@@ -29,8 +29,13 @@ export async function GET() {
     const objectsPrefix = "/objects/";
     const objectsIndex = urlObj.pathname.indexOf(objectsPrefix);
     if (objectsIndex !== -1) {
-      const encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
-      key = decodeURIComponent(encodedKey);
+      let encodedKey = urlObj.pathname.substring(objectsIndex + objectsPrefix.length);
+      encodedKey = decodeURIComponent(encodedKey);
+      if (encodedKey.startsWith("resumes/")) {
+        key = encodedKey.substring("resumes/".length);
+      } else {
+        key = encodedKey;
+      }
       filename = key.substring(key.lastIndexOf("/") + 1);
     }
   } catch (err) {
