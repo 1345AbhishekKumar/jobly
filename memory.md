@@ -1,17 +1,18 @@
-# Memory — Job Details Page — Full UI (Feature 12)
+# Memory — Dashboard Page (Features 14, 15, & 16)
 
 Last updated: June 11, 2026
 
 ## What was built
 
-- **Feature 12 (Job Details Page — Full UI)**: Created [JobDetailsClient.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/job-details/JobDetailsClient.tsx) (interactive client component) and the dynamic server page [page.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/app/find-jobs/[id]/page.tsx).
-- **InsForge Database Integration**: Scoped database queries to both `id` and the authenticated user's `user_id`. Wired all job description details (responsibilities, requirements, nice-to-haves, benefits), metadata fields, and AI insights (match reasoning, matched/missing skills).
-- **Company Research Dossier UI**: Supported both empty state (Research Company CTA) and full dossier view rendering all 9 parsed company fields.
+- **Feature 13 (Company Research Agent)**: Completed prior background crawler agent in `agent/research.ts` and API route `/api/agent/research`.
+- **Feature 14 (Dashboard Page — Full UI)**: Created [DashboardContent.tsx](file:///d:/MyProjects/ongoing_Projects/jobly/components/dashboard/DashboardContent.tsx) as an interactive dashboard view equipped with `recharts` for Jobs Found, Match Score, and Resume Tailoring visualizations.
+- **Feature 15 (Stats Bar — Real Data)**: Wired dashboard cards to dynamically load current user metrics (total jobs found, avg. match rate, company dossiers researched, weekly saved counts) from InsForge DB.
+- **Feature 16 (Recent Activity — Real Data)**: Created recent activity timeline list from merged and sorted `agent_runs` and `jobs` tables, complete with relative time formatters and status dots.
 
 ## Decisions made
 
-- **Pre-implemented Dossier UI**: Built complete dossier rendering (Company Overview, Tech Stack, Culture, Strategic Importance, Your Edge, Gaps to Address, Smart Questions, Interview Prep, Sources) to avoid subsequent edits once Feature 13 is completed.
-- **Dynamic Routing Type Safety**: Awaited `params` promise natively to adhere to Next.js 16 requirements.
+- **TSConfig Exclusions**: Excluded `test-*.ts` root testing files from TSConfig to prevent Next.js build compilation warnings/errors due to missing bun test typing declarations.
+- **Deduplicated Timelines**: Suppressed duplicate research run logs in the activity timeline by omitting `agent_runs` that start with `"Research:"`, as the successful result is already displayed via the `jobs` (researched company) timeline indicators.
 
 ## Problems solved
 
@@ -19,12 +20,12 @@ Last updated: June 11, 2026
 
 ## Current state
 
-- Feature 12 is 100% complete.
+- Features 14, 15, and 16 are 100% complete and fully verified.
 - Next.js production build (`bun run build`) compiles successfully.
 
 ## Next session starts with
 
-- **Feature 13 (Company Research Agent)**: Implement the background crawler agent in `agent/research.ts` utilizing Stagehand and Browserbase, and build the backend API route `/api/agent/research` to populate the `company_research` dossier.
+- **Feature 17 (Analytics Charts — PostHog Data)**: Wire the dashboard's recharts graphs to actual analytics events tracked inside PostHog.
 
 ## Open questions
 

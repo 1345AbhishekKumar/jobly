@@ -16,10 +16,12 @@
     "openai": "^6.42.0",
     "pdf-parse": "^2.4.5",
     "pg": "^8.21.0",
+    "playwright": "^1.60.0",
     "posthog-js": "^1.384.3",
     "posthog-node": "^5.36.15",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

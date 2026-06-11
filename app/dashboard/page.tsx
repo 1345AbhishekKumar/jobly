@@ -2,7 +2,79 @@ import { redirect } from "next/navigation";
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import Link from "next/link";
+
+// Helper to calculate completeness percentage and missing fields list
+// Matches actions/profile.ts server-side validation logic
+function calculateCompleteness(profile: any) {
+  const missingFields: string[] = [];
+  let filledCount = 0;
+
+  if (profile.full_name?.trim()) filledCount++; else missingFields.push("FULL_NAME");
+  if (profile.phone?.trim()) filledCount++; else missingFields.push("PHONE");
+  if (profile.location?.trim()) filledCount++; else missingFields.push("LOCATION");
+  if (profile.current_title?.trim()) filledCount++; else missingFields.push("CURRENT_TITLE");
+  if (profile.experience_level?.trim()) filledCount++; else missingFields.push("EXPERIENCE_LEVEL");
+  if (
+    profile.years_experience !== null &&
+    profile.years_experience !== undefined &&
+    profile.years_experience !== ""
+  ) {
+    filledCount++;
+  } else {
+    missingFields.push("YEARS_EXPERIENCE");
+  }
+  if (profile.skills && profile.skills.length > 0) filledCount++; else missingFields.push("SKILLS");
+  
+  if (
+    profile.work_experience &&
+    profile.work_experience.length > 0 &&
+    profile.work_experience.some((r: any) => r.company && r.jobTitle)
+  ) {
+    filledCount++;
+  } else {
+    missingFields.push("WORK_EXPERIENCE");
+  }
+  
+  if (profile.education && profile.education.length > 0) {
+    const hasEdu = profile.education.some((e: any) => e.degree || e.field || e.institution);
+    if (hasEdu) filledCount++; else missingFields.push("EDUCATION");
+  } else {
+    missingFields.push("EDUCATION");
+  }
+  
+  if (profile.job_titles_seeking && profile.job_titles_seeking.length > 0) filledCount++; else missingFields.push("JOB_PREFERENCES");
+
+  const percentage = Math.round((filledCount / 10) * 100);
+  return {
+    isComplete: percentage === 100,
+    completionPercentage: percentage,
+    missingFields,
+  };
+}
+
+// Helper to format timestamps to a relative format on the server
+function formatRelativeTime(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffSec < 60) return "just now";
+  if (diffMin < 60) return `${diffMin} ${diffMin === 1 ? "minute" : "minutes"} ago`;
+  if (diffHr < 24) return `${diffHr} ${diffHr === 1 ? "hour" : "hours"} ago`;
+  if (diffDay < 7) return `${diffDay} ${diffDay === 1 ? "day" : "days"} ago`;
+  
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
 
 export default async function DashboardPage() {
   const insforge = await createInsforgeServer();
@@ -13,6 +85,111 @@ export default async function DashboardPage() {
   if (!user) {
     redirect("/login?redirectTo=/dashboard");
   }
+
+  // Fetch the user's profile from InsForge DB
+  const { data: profile } = await insforge.database
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  // Determine profile completeness metrics
+  let isProfileComplete = false;
+  let completionPercentage = 0;
+  let missingFields = [
+    "FULL_NAME", "PHONE", "LOCATION", "CURRENT_TITLE",
+    "EXPERIENCE_LEVEL", "YEARS_EXPERIENCE", "SKILLS",
+    "WORK_EXPERIENCE", "EDUCATION", "JOB_PREFERENCES"
+  ];
+
+  if (profile) {
+    const completeness = calculateCompleteness(profile);
+    isProfileComplete = completeness.isComplete;
+    completionPercentage = completeness.completionPercentage;
+    missingFields = completeness.missingFields;
+  }
+
+  // Fetch jobs for stats calculation (and company research counts)
+  const { data: jobs } = await insforge.database
+    .from("jobs")
+    .select("id, match_score, company_research, found_at, created_at")
+    .eq("user_id", user.id);
+
+  // Fetch recent agent runs
+  const { data: recentRuns } = await insforge.database
+    .from("agent_runs")
+    .select("id, status, job_title_searched, jobs_found, completed_at, started_at")
+    .eq("user_id", user.id)
+    .order("started_at", { ascending: false })
+    .limit(10);
+
+  // Fetch recent jobs that have company research dossiers completed
+  const { data: researchedJobs } = await insforge.database
+    .from("jobs")
+    .select("id, company, found_at, created_at")
+    .eq("user_id", user.id)
+    .not("company_research", "is", null)
+    .order("found_at", { ascending: false })
+    .limit(10);
+
+  // Calculate real metrics
+  const totalJobsFound = jobs ? jobs.length : 0;
+  let avgMatchRate = 0;
+  if (totalJobsFound > 0 && jobs) {
+    const sum = jobs.reduce((acc: number, j: any) => acc + (j.match_score || 0), 0);
+    avgMatchRate = Math.round(sum / totalJobsFound);
+  }
+
+  const companiesResearchedCount = jobs
+    ? jobs.filter((j: any) => j.company_research !== null).length
+    : 0;
+
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const jobsThisWeekCount = jobs
+    ? jobs.filter((j: any) => new Date(j.found_at || j.created_at) >= oneWeekAgo).length
+    : 0;
+
+  // Merge, sort and format recent activities
+  const activities: { title: string; time: string; desc: string; dotColor: string; timestamp: Date }[] = [];
+
+  if (recentRuns) {
+    recentRuns.forEach((run: any) => {
+      // Exclude research runs to avoid double-counting in timeline since we list them via researchedJobs
+      if (run.job_title_searched?.startsWith("Research:")) {
+        return;
+      }
+      const timestampStr = run.completed_at || run.started_at;
+      if (timestampStr) {
+        activities.push({
+          title: `Found ${run.jobs_found || 0} jobs for '${run.job_title_searched}'`,
+          time: formatRelativeTime(timestampStr),
+          desc: `Search run completed ${run.status === "completed" ? "successfully" : "with errors"}.`,
+          dotColor: "bg-blue-500 ring-blue-500/20",
+          timestamp: new Date(timestampStr)
+        });
+      }
+    });
+  }
+
+  if (researchedJobs) {
+    researchedJobs.forEach((job: any) => {
+      const timestampStr = job.found_at || job.created_at;
+      if (timestampStr) {
+        activities.push({
+          title: `Researched ${job.company}`,
+          time: formatRelativeTime(timestampStr),
+          desc: "Engineering team, tech stack, and interview dossier ready.",
+          dotColor: "bg-emerald-500 ring-emerald-500/20",
+          timestamp: new Date(timestampStr)
+        });
+      }
+    });
+  }
+
+  // Sort activities by date descending
+  activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  const recentActivities = activities.slice(0, 5);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -37,85 +214,19 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* Profile Incomplete Banner */}
-        <div className="rounded-2xl border border-accent/20 bg-accent/5 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-accent-light rounded-xl text-accent">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold text-text-primary font-display">
-                Profile Incomplete
-              </h3>
-              <p className="text-sm text-text-secondary mt-0.5">
-                Complete your profile and upload your resume to unlock accurate, tailored job matching.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/profile"
-            className="inline-flex h-9 items-center justify-center rounded-md bg-accent px-4 text-xs font-semibold text-white hover:bg-accent-dark active:scale-[0.97] btn-interactive focus-ring shadow-sm shrink-0"
-          >
-            Complete Profile
-          </Link>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { label: "Total Jobs Found", value: "0", desc: "No job matches saved yet" },
-            { label: "Avg. Match Rate", value: "0%", desc: "Requires complete profile" },
-            { label: "Researched Companies", value: "0", desc: "No dossiers generated yet" },
-            { label: "Jobs Saved This Week", value: "0", desc: "Start searching to find jobs" },
-          ].map((stat, i) => (
-            <div key={i} className="bg-surface rounded-2xl border border-border p-6 shadow-sm">
-              <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                {stat.label}
-              </span>
-              <div className="text-4xl font-semibold text-text-primary tracking-tight font-display mt-2">
-                {stat.value}
-              </div>
-              <p className="text-xs text-text-muted mt-1">{stat.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Lower Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Activity */}
-          <div className="lg:col-span-1 bg-surface rounded-2xl border border-border p-6 shadow-sm flex flex-col h-[400px]">
-            <h3 className="text-lg font-semibold text-text-primary font-display mb-4">
-              Recent Activity
-            </h3>
-            <div className="flex-1 overflow-y-auto flex flex-col justify-center items-center text-center p-6 text-text-muted">
-              <svg className="h-10 w-10 text-text-muted/60 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-sm">No activity recorded yet</p>
-              <p className="text-xs mt-1">Actions you perform will show up in this timeline</p>
-            </div>
-          </div>
-
-          {/* Analytics Placeholder */}
-          <div className="lg:col-span-2 bg-surface rounded-2xl border border-border p-6 shadow-sm flex flex-col h-[400px]">
-            <h3 className="text-lg font-semibold text-text-primary font-display mb-4">
-              Job Match Analytics
-            </h3>
-            <div className="flex-1 flex flex-col justify-center items-center text-center p-6 text-text-muted border-2 border-dashed border-border rounded-xl">
-              <svg className="h-12 w-12 text-text-muted/60 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-              </svg>
-              <h4 className="font-semibold text-text-primary text-sm font-display">
-                No Analytics Data
-              </h4>
-              <p className="text-xs mt-1 max-w-[320px]">
-                Search for job postings and score matches to see score distribution and search history charts.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Dashboard Content Client Component (incorporates cards, timeline & recharts) */}
+        <DashboardContent
+          isProfileComplete={isProfileComplete}
+          completionPercentage={completionPercentage}
+          missingFields={missingFields}
+          stats={{
+            totalJobsFound,
+            avgMatchRate,
+            companiesResearchedCount,
+            jobsThisWeekCount
+          }}
+          recentActivities={recentActivities}
+        />
       </main>
 
       <Footer />
