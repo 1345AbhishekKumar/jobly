@@ -19,6 +19,7 @@ interface DBJob {
   source?: string | null;
   found_at?: string | null;
   created_at?: string | null;
+  formattedDateFound: string;
 }
 
 interface FindJobsClientProps {
@@ -56,7 +57,8 @@ export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
       matchScore: dbJob.match_score,
       salary: dbJob.salary || "N/A",
       source: dbJob.source === "search" ? ("LinkedIn" as const) : ("URL" as const),
-      dateFound: dbJob.found_at || dbJob.created_at || new Date().toISOString(),
+      rawDateFound: dbJob.found_at || dbJob.created_at || new Date().toISOString(),
+      dateFound: dbJob.formattedDateFound,
     }));
   }, [initialJobs]);
 
@@ -146,9 +148,9 @@ export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
       if (sortBy === "score") {
         return b.matchScore - a.matchScore;
       } else if (sortBy === "newest") {
-        return new Date(b.dateFound).getTime() - new Date(a.dateFound).getTime();
+        return new Date(b.rawDateFound).getTime() - new Date(a.rawDateFound).getTime();
       } else {
-        return new Date(a.dateFound).getTime() - new Date(b.dateFound).getTime();
+        return new Date(a.rawDateFound).getTime() - new Date(b.rawDateFound).getTime();
       }
     });
 
@@ -162,16 +164,6 @@ export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
   }, [processedJobs, currentPage]);
 
   const totalPages = Math.ceil(processedJobs.length / ITEMS_PER_PAGE) || 1;
-
-  // Format Date Helper
-  const formatDate = (dateStr: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    };
-    return new Date(dateStr).toLocaleDateString("en-US", options);
-  };
 
   // Derive counts for banner
   const strongMatchesCount = useMemo(() => {
@@ -229,7 +221,7 @@ export function FindJobsClient({ initialJobs }: FindJobsClientProps) {
 
         {/* Jobs Table & Pagination Container */}
         <div className="rounded-xl border border-border bg-surface shadow-sm overflow-hidden">
-          <JobsTable jobs={paginatedJobs} formatDate={formatDate} />
+          <JobsTable jobs={paginatedJobs} />
 
           {processedJobs.length > 0 && (
             <Pagination

@@ -6,10 +6,9 @@ import { MATCH_THRESHOLD } from "@/lib/utils";
 
 interface JobsTableProps {
   jobs: Job[];
-  formatDate: (dateStr: string) => string;
 }
 
-export function JobsTable({ jobs, formatDate }: JobsTableProps) {
+export function JobsTable({ jobs }: JobsTableProps) {
   // Render score bar and color matching reference image
   const renderScoreBar = (score: number) => {
     let barColor = "bg-success"; // Green (>= 90%)
@@ -96,7 +95,7 @@ export function JobsTable({ jobs, formatDate }: JobsTableProps) {
 
                   {/* DATE FOUND */}
                   <td className="py-4 px-6 text-xs text-text-muted align-middle">
-                    {formatDate(job.dateFound)}
+                    {job.dateFound}
                   </td>
                 </tr>
               ))

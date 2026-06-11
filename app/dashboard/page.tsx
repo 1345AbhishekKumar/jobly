@@ -143,7 +143,10 @@ export default async function DashboardPage() {
 
   // Sort activities by date descending
   activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  const recentActivities = activities.slice(0, 5);
+  const recentActivities = activities.slice(0, 5).map(({ timestamp, ...rest }) => {
+    void timestamp;
+    return rest;
+  });
 
   // Fetch charts data from PostHog or DB fallback
   const { jobsFoundData, matchScoreData, companyResearchData } = await getDashboardChartsData(user.id);

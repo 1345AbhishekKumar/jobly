@@ -80,12 +80,28 @@ export default async function JobDetailsPage({ params }: PageProps) {
     );
   }
 
+  const formatDateServer = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "N/A";
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    };
+    return new Date(dateStr).toLocaleDateString("en-US", options);
+  };
+
+  const serializedJob = {
+    ...job,
+    formattedDateFound: formatDateServer(job.found_at || job.created_at),
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
 
       <main className="flex-1 mx-auto w-full max-w-[1440px] px-8 py-8">
-        <JobDetailsClient job={job} />
+        <JobDetailsClient job={serializedJob} />
       </main>
 
       <Footer />

@@ -48,6 +48,7 @@ interface JobDetailsClientProps {
     source?: string;
     found_at?: string;
     created_at?: string;
+    formattedDateFound: string;
   };
 }
 
@@ -57,18 +58,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
   const [researchError, setResearchError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"company" | "fit" | "prep">("company");
 
-  // Format Date Helper
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "N/A";
-    const options: Intl.DateTimeFormatOptions = {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    };
-    return new Date(dateStr).toLocaleDateString("en-US", options);
-  };
-
-  const formattedDate = formatDate(job.found_at || job.created_at);
+  const formattedDate = job.formattedDateFound;
 
   // Trigger Research Agent
   const handleResearchClick = async () => {

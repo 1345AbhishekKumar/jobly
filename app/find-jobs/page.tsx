@@ -23,6 +23,22 @@ export default async function FindJobsPage() {
     console.error("[FindJobsPage] Failed to fetch jobs:", jobsError);
   }
 
+  const formatDateServer = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "N/A";
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    };
+    return new Date(dateStr).toLocaleDateString("en-US", options);
+  };
+
+  const serializedJobs = (jobs || []).map((job) => ({
+    ...job,
+    formattedDateFound: formatDateServer(job.found_at || job.created_at),
+  }));
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
@@ -38,7 +54,7 @@ export default async function FindJobsPage() {
         </div>
 
         {/* Find Jobs Client (Interactive UI connected to DB) */}
-        <FindJobsClient initialJobs={jobs || []} />
+        <FindJobsClient initialJobs={serializedJobs} />
       </main>
 
       <Footer />
